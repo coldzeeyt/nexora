@@ -1,0 +1,1 @@
+{"name":"nexora-api","version":"0.1.0","private":true,"type":"module","scripts":{"start":"node server.js","migrate":"node migrate.js"},"dependencies":{"fastify":"^5.2.0","@fastify/rate-limit":"^10.2.0","pg":"^8.13.3"}}
