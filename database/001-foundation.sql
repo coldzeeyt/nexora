@@ -1,4 +1,5 @@
 BEGIN;
+SELECT pg_advisory_xact_lock(hashtext('nexora:foundation'));
 CREATE TABLE IF NOT EXISTS websites (
  domain text PRIMARY KEY CHECK (domain ~ '^[a-z0-9][a-z0-9-]*\.(nex|vnt|zen|orb|kiv)$'),
  title text NOT NULL,
@@ -16,3 +17,4 @@ INSERT INTO websites(domain,title,description,html,published) VALUES
  ('journal.kiv','Personal spaces','Small observations.','<h1>Small observations.</h1><p>Your own space can be a single HTML file.</p>',true)
  ON CONFLICT DO NOTHING;
 COMMIT;
+
