@@ -2,11 +2,7 @@ const {app,BrowserWindow,protocol,session,ipcMain} = require('electron');
 const path = require('node:path');
 const {parseAddress} = require('../shared/address.cjs');
 protocol.registerSchemesAsPrivileged([{scheme:'nexora',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
-const sites = {
- 'welcome.zen':'<h1>A place to begin.</h1><p>Welcome to the Nexora community. This local starter site is included with your browser.</p>',
- 'makers.vnt':'<h1>Made by people.</h1><p>A quiet corner for curious builders. Share ideas, create something useful, and make yourself at home.</p>',
- 'journal.kiv':'<h1>Small observations.</h1><p>A personal journal starter. Your own space can be as simple as a single HTML file.</p>'
-};
+const sites = {};
 app.whenReady().then(() => {
  session.defaultSession.webRequest.onBeforeRequest((details,done) => done({cancel:!details.url.startsWith('file://') && !details.url.startsWith('nexora://')}));
  const configuredOrigin=process.env.NEXORA_API_URL || (process.env.NEXORA_LOCAL==='1' ? undefined : require('./config.cjs').apiOrigin);
@@ -37,5 +33,6 @@ app.whenReady().then(() => {
  win.loadFile(path.join(__dirname,'../dist/index.html'));
 });
 app.on('window-all-closed',()=>app.quit());
+
 
 
