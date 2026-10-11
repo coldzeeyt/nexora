@@ -1,5 +1,8 @@
 {
-  "release": "Nexora Windows preview",
-  "features": "Complete browser and publishing; Velora download entry only",
-  "revision": 1791681131945
+  "release": "Nexora and Velora 0.3.0 Windows",
+  "features": "Velora ecosystem, configurable Online mode, first-login tutorial, desktop grid and browser fixes",
+  "platforms": [
+    "windows"
+  ],
+  "revision": 1791698733889
 }
