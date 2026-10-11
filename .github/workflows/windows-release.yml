@@ -20,7 +20,7 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npm install --prefix apps/api --ignore-scripts --no-audit --no-fund
       - run: npm test
-      - run: npm run dist
+      - run: npm run dist -- --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
       - name: Publish Windows installer
