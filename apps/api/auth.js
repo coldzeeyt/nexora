@@ -17,4 +17,6 @@ export function registerAuth(app,pool){
  const preHandler=requireUser(pool);
  app.get('/v1/me',{preHandler},async req=>({user:req.user}));
  app.post('/v1/auth/logout',{preHandler},async req=>{await pool.query('DELETE FROM sessions WHERE token_hash=$1',[req.tokenHash]);return {ok:true};});
+ app.delete('/v1/me',{preHandler,schema:{body:{type:'object',additionalProperties:false,required:['password'],properties:{password:{type:'string',maxLength:128}}}}},async(req,reply)=>{const result=await pool.query('SELECT password_hash FROM users WHERE id=$1',[req.user.id]);if(!await verifyPassword(req.body.password,result.rows[0].password_hash))return reply.code(403).send({error:'Password confirmation failed.'});await pool.query('DELETE FROM users WHERE id=$1',[req.user.id]);return {ok:true};});
 }
+
