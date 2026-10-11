@@ -1,5 +1,7 @@
-# Deferred downloads
+# Downloads
 
-After the current Windows release, add standalone ecosystem-app downloads to the Nexora public download site alongside Nexora and Velora. Each standalone app should include its own in-app update feed and update controls so users do not need to reinstall from the website. Keep shared Nexora/Nomi sign-in. Do not include these installers in the current push.
+The primary software download is the Velora Installer. It offers the full Velora workspace, Nexora and twelve optional standalone apps. Each selected package is fetched from the official GitHub release and verified before installation. Windows installs selected apps; macOS opens verified disk images for copying into Applications.
 
-APK and Mac DMG remain paused and are excluded from the current release.
+Windows standalone apps use their own update channels. Mac previews verify downloaded updates and open the replacement disk image; automatic Mac replacement requires signing and is not available in this preview.
+
+Android test builds are separate CI artifacts. Production APK publication is pending a persistent private signing key; no signing key is committed to the repository. Hardware firmware and a terminal are on hold.
