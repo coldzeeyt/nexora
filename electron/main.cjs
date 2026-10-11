@@ -12,11 +12,13 @@ app.whenReady().then(() => {
  const configuredOrigin=process.env.NEXORA_API_URL || (process.env.NEXORA_LOCAL==='1' ? undefined : require('./config.cjs').apiOrigin);
  let apiOrigin;
  if(configuredOrigin){const parsed=new URL(configuredOrigin);if(parsed.protocol!=='https:'||parsed.username||parsed.password||parsed.pathname!=='/')throw new Error('NEXORA_API_URL must be an HTTPS origin');apiOrigin=parsed.origin;}
+ const apiSession=session.fromPartition('nexora-internal');
+ apiSession.webRequest.onBeforeRequest((details,done)=>{let allowed=false;try{allowed=!!apiOrigin&&new URL(details.url).origin===apiOrigin;}catch{}done({cancel:!allowed});});
  protocol.handle('nexora', async request => {
   let host;
   try {host=parseAddress(request.url).host;} catch {return new Response('Unsupported address',{status:400});}
   let content=sites[host];
-  if(apiOrigin){try{const response=await fetch(`${apiOrigin}/v1/resolve/${encodeURIComponent(host)}`,{redirect:'error',signal:AbortSignal.timeout(10000)});if(response.ok){const data=await response.json();content=typeof data.html==='string'&&data.html.length<=1024*1024?data.html:undefined;}else if(response.status===404){content=undefined;}else{return new Response('Nexora backend unavailable',{status:503,headers:{'Content-Type':'text/plain'}});}}catch{return new Response('Could not connect to the Nexora backend',{status:503,headers:{'Content-Type':'text/plain'}});}}
+  if(apiOrigin){try{const response=await apiSession.fetch(`${apiOrigin}/v1/resolve/${encodeURIComponent(host)}`,{redirect:'error',signal:AbortSignal.timeout(10000)});if(response.ok){const data=await response.json();content=typeof data.html==='string'&&data.html.length<=1024*1024?data.html:undefined;}else if(response.status===404){content=undefined;}else{return new Response('Nexora backend unavailable',{status:503,headers:{'Content-Type':'text/plain'}});}}catch{return new Response('Could not connect to the Nexora backend',{status:503,headers:{'Content-Type':'text/plain'}});}}
   return new Response(`<!doctype html><html lang="en"><meta charset="utf-8"><style>body{font:18px system-ui;max-width:720px;margin:100px auto;padding:32px;color:#222}h1{font-size:48px;font-weight:500;letter-spacing:-2px}p{line-height:1.8;color:#666}</style>${content||'<h1>Address not found</h1><p>This address is not registered in the local network.</p>'}</html>`,{status:content?200:404,headers:{'Content-Type':'text/html','Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; script-src 'none'; frame-ancestors 'self' file:"}});
  });
  const win=new BrowserWindow({width:1280,height:850,minWidth:760,minHeight:560,title:'Nexora',backgroundColor:'#fafafa',autoHideMenuBar:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true}});
@@ -24,12 +26,14 @@ app.whenReady().then(() => {
   if(event.sender!==win.webContents||event.senderFrame!==win.webContents.mainFrame||!event.senderFrame.url.startsWith('file://'))throw new Error('Access denied');
   if(typeof question!=='string'||!question.trim()||question.length>2000)return {error:'Enter up to 2,000 characters.'};
   if(!apiOrigin)return {error:'AI needs the public Nexora backend. Offline mode is enabled.'};
-  try{const response=await fetch(`${apiOrigin}/v1/ask`,{method:'POST',redirect:'error',signal:AbortSignal.timeout(35000),headers:{'Content-Type':'application/json'},body:JSON.stringify({question})});const data=await response.json();return {summary:typeof data.summary==='string'?data.summary:undefined,error:typeof data.error==='string'?data.error:undefined};}catch{return {error:'Could not reach Nexora AI. Please try again later.'};}
+  try{const response=await apiSession.fetch(`${apiOrigin}/v1/ask`,{method:'POST',redirect:'error',signal:AbortSignal.timeout(35000),headers:{'Content-Type':'application/json'},body:JSON.stringify({question})});const data=await response.json();return {summary:typeof data.summary==='string'?data.summary:undefined,error:typeof data.error==='string'?data.error:undefined};}catch{return {error:'Could not reach Nexora AI. Please try again later.'};}
  });
  win.webContents.setWindowOpenHandler(()=>({action:'deny'}));
+ require('./studio-api.cjs')(win,apiOrigin,apiSession);
  win.webContents.on('will-navigate',event=>event.preventDefault());
  session.defaultSession.setPermissionRequestHandler((_wc,_permission,callback)=>callback(false));
  session.defaultSession.on('will-download',event=>event.preventDefault());
  win.loadFile(path.join(__dirname,'../dist/index.html'));
 });
 app.on('window-all-closed',()=>app.quit());
+
