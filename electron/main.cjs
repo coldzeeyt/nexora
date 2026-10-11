@@ -20,7 +20,8 @@ app.whenReady().then(() => {
   if(typeof question!=='string'||!question.trim()||question.length>2000)return {error:'Enter up to 2,000 characters.'};
   if(!network.allowed('ai'))return {error:'AI is off. Enable Online mode and AI in Velora’s connectivity settings.'};
   if(!apiOrigin)return {error:'AI needs the public Nexora backend. Offline mode is enabled.'};
-  try{const response=await apiSession.fetch(`${apiOrigin}/v1/ask`,{method:'POST',redirect:'error',signal:AbortSignal.timeout(35000),headers:{'Content-Type':'application/json'},body:JSON.stringify({question})});const data=await response.json();return {summary:typeof data.summary==='string'?data.summary:undefined,error:typeof data.error==='string'?data.error:undefined};}catch{return {error:'Could not reach Nexora AI. Please try again later.'};}
+  const controller=new AbortController();const unsubscribe=network.subscribe(()=>{if(!network.allowed('ai'))controller.abort();});
+  try{const response=await apiSession.fetch(`${apiOrigin}/v1/ask`,{method:'POST',redirect:'error',signal:AbortSignal.any([controller.signal,AbortSignal.timeout(35000)]),headers:{'Content-Type':'application/json'},body:JSON.stringify({question})});const data=await response.json();return {summary:typeof data.summary==='string'?data.summary:undefined,error:typeof data.error==='string'?data.error:undefined};}catch{return {error:network.allowed('ai')?'Could not reach Nexora AI. Please try again later.':'AI was turned off. The request was canceled.'};}finally{unsubscribe();}
  });
  win.webContents.setWindowOpenHandler(()=>({action:'deny'}));
  require('./studio-api.cjs')(win,apiOrigin,apiSession);
