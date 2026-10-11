@@ -6,6 +6,8 @@ const velora=process.env.VELORA_DESKTOP==='1';const standalone=process.env.VELOR
 if(velora){app.setName(product);app.setPath('userData',process.argv.find(a=>a.startsWith('--user-data-dir='))?.slice(16)||path.join(app.getPath('appData'),standalone?'VeloraApps/'+standalone:pro?'Velora Pro':'Velora'));}
 const network=require('./network-state.cjs');
 app.whenReady().then(() => {
+ if(pro&&!app.requestSingleInstanceLock()){app.quit();return;}
+ if(pro)app.on('second-instance',()=>{const current=BrowserWindow.getAllWindows()[0];if(current){if(current.isMinimized())current.restore();current.show();current.focus();}});
  session.defaultSession.webRequest.onBeforeRequest((details,done) => done({cancel:!details.url.startsWith('file://') && !details.url.startsWith('nexora://') && !details.url.startsWith('nexora-preview://') && !(velora&&details.url.startsWith('velora-media://'))}));
  const configuredOrigin=process.env.NEXORA_API_URL || (process.env.NEXORA_LOCAL==='1' ? undefined : require('./config.cjs').apiOrigin);
  let apiOrigin;
