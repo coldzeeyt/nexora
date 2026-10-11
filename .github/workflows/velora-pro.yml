@@ -66,6 +66,7 @@ jobs:
         run: |
           if gh release view velora-pro-latest >/dev/null 2>&1; then
             gh release upload velora-pro-latest pro-assets/*.exe pro-assets/*.dmg pro-assets/*.yml pro-assets/*.json pro-assets/*.blockmap --clobber
+            gh release edit velora-pro-latest --notes-file docs/velora-pro.md --prerelease --latest=false
           else
             gh release create velora-pro-latest pro-assets/*.exe pro-assets/*.dmg pro-assets/*.yml pro-assets/*.json pro-assets/*.blockmap --title 'Velora Pro — Free preview' --notes-file docs/velora-pro.md --prerelease --latest=false
           fi
@@ -73,3 +74,5 @@ jobs:
 # Flatten combined Pro and Installer artifacts before catalog verification.
 
 # Pro 0.4.2 adds separate native workspace windows.
+
+# Pro 0.4.3 protects each native workspace with its own process lock.
