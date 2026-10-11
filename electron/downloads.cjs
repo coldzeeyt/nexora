@@ -1,0 +1,12 @@
+const {ipcMain,dialog,app}=require('electron');const fs=require('node:fs');const path=require('node:path');const {parseAddress}=require('../shared/address.cjs');
+const TYPES={pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',txt:'text/plain'};
+module.exports=function downloads(win,origin,ses){
+ const historyPath=path.join(app.getPath('userData'),'nexora-downloads.json');let history=[];try{const value=JSON.parse(fs.readFileSync(historyPath,'utf8'));if(Array.isArray(value))history=value.slice(0,50);}catch{}
+ ipcMain.handle('nexora:download',async(event,operation,address)=>{
+  if(event.sender!==win.webContents||event.senderFrame!==win.webContents.mainFrame||!event.senderFrame.url.startsWith('file://'))throw new Error('Access denied');
+  if(operation==='history')return {downloads:history};if(operation!=='save')return {error:'Invalid download.'};
+  let parsed,url,fileName,type;try{if(typeof address!=='string'||address.length>400)throw new Error();parsed=parseAddress(address);url=new URL(parsed.url);fileName=path.posix.basename(decodeURIComponent(url.pathname));type=TYPES[fileName.split('.').at(-1).toLowerCase()];if(!type)throw new Error();}catch{return {error:'Download a Nexora PDF, PNG, JPEG, GIF, WebP or plain-text file.'};}
+  if(!origin)return {error:'Downloads need the shared Nexora network.'};
+  try{const filePath=decodeURIComponent(url.pathname).slice(1);const response=await ses.fetch(`${origin}/v1/assets/${encodeURIComponent(parsed.host)}/${filePath.split('/').map(encodeURIComponent).join('/')}`,{credentials:'omit',redirect:'error',signal:AbortSignal.timeout(15000)});if(!response.ok)return {error:'This file is unavailable or the site is unpublished.'};if(!response.headers.get('content-type')?.startsWith(type))return {error:'This is not the expected file type.'};const data=Buffer.from(await response.arrayBuffer());if(data.length>1024*1024)return {error:'Permitted downloads must be 1 MB or smaller.'};const chosen=await dialog.showSaveDialog(win,{title:'Save Nexora file',defaultPath:fileName.replace(/[^a-zA-Z0-9._-]/g,'_')});if(chosen.canceled||!chosen.filePath)return {canceled:true};await fs.promises.writeFile(chosen.filePath,data);const item={name:fileName,address:parsed.address,bytes:data.length,time:new Date().toISOString()};history=[item,...history].slice(0,50);await fs.promises.writeFile(historyPath,JSON.stringify(history));return {ok:true,downloads:history};}catch{return {error:'The file could not be downloaded. Try again.'};}
+ });
+};
