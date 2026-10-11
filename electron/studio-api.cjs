@@ -10,7 +10,7 @@ module.exports=function connectStudio(win,apiOrigin,apiSession){
   if(['availability','publish','remove'].includes(operation)){if(typeof payload.domain!=='string'||payload.domain.length>80)return {error:'Choose a Nexora address.'};route+=encodeURIComponent(payload.domain);}
   try{
    const body=['availability','sites','me','remove'].includes(operation)?undefined:JSON.stringify(operation==='publish'?{published:payload.published}:payload);
-   const response=await apiSession.fetch(apiOrigin+route,{method,redirect:'error',credentials:'omit',signal:AbortSignal.timeout(15000),headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},body});
+   const response=await apiSession.fetch(apiOrigin+route,{method,redirect:'error',credentials:'omit',signal:AbortSignal.timeout(15000),headers:{...(body?{'Content-Type':'application/json'}:{}),...(token?{Authorization:`Bearer ${token}`}:{})},body});
    const data=await response.json();
    if(['login','register'].includes(operation)&&response.ok){token=data.token;return {user:data.user};}
    if(operation==='logout'&&response.ok)token=undefined;
