@@ -1,3 +1,4 @@
+import {useBackups} from './Backup';
 import React,{useEffect,useRef,useState} from 'react';
 import Browser from '../Browser';
 import {catalog as builtinCatalog,clampRect,defaults,type AppId,type DesktopData,type DesktopWindow} from './model';
@@ -16,6 +17,7 @@ import {studioApi} from '../studio-client';
 export function Velora(){
  const [data,setData]=useState<DesktopData>(structuredClone(defaults));const [ready,setReady]=useState(false);const [boot,setBoot]=useState(true);const [windows,setWindows]=useState<DesktopWindow[]>([]);const [active,setActive]=useState<number>();const [launcher,setLauncher]=useState(false);const [query,setQuery]=useState('');const [center,setCenter]=useState(false);const [notifications,setNotifications]=useState<{id:number;text:string;time:string}[]>([]);const [now,setNow]=useState(new Date());const [status,setStatus]=useState('Saved locally');const area=useRef<HTMLDivElement>(null);const nextId=useRef(1);const saveId=useRef(0);const initial=useRef(false);
  const [username,setUsername]=useState("");const [userId,setUserId]=useState("");const [tutorialVisible,setTutorialVisible]=useState(false);const [browserAddress,setBrowserAddress]=useState("home.nex");useEffect(()=>{const update=()=>void studioApi("me").then(r=>{setUsername(r.user?.username||"");setUserId(r.user?.id||"");});update();window.addEventListener("velora:account-changed",update);window.addEventListener("velora:network-changed",update);return()=>{window.removeEventListener("velora:account-changed",update);window.removeEventListener("velora:network-changed",update);};},[]);
+ useBackups(data,ready);
  const latestData=useRef({data,ready});latestData.current={data,ready};useEffect(()=>window.velora?.onFlush(()=>{void(async()=>{const latest=latestData.current;if(latest.ready){const result=await window.velora?.store("save",latest.data);if(result?.error){setStatus(result.error);await window.velora?.store("close-cancel");return;}}await window.velora?.store("close-ready");})();}),[]);
  const bounds=()=>({width:area.current?.clientWidth||innerWidth,height:area.current?.clientHeight||innerHeight-104});
  const notify=(text:string)=>{if(data.settings.notifications)setNotifications(n=>[{id:Date.now(),text,time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})},...n].slice(0,30));};
