@@ -34,10 +34,15 @@ jobs:
           BUILD_APP: velora-pro
           BUILD_PLATFORM: ${{ matrix.platform }}
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - run: node scripts/build-installer.cjs
+        env:
+          BUILD_PLATFORM: ${{ matrix.platform }}
       - uses: actions/upload-artifact@v4
         with:
           name: pro-${{ matrix.platform }}
           path: |
+            release-installer/${{ matrix.platform }}/*.exe
+            release-installer/${{ matrix.platform }}/*.dmg
             release-platform/${{ matrix.platform }}/velora-pro/*.exe
             release-platform/${{ matrix.platform }}/velora-pro/*.blockmap
             release-platform/${{ matrix.platform }}/velora-pro/*.yml
@@ -54,6 +59,7 @@ jobs:
           pattern: pro-*
           path: pro-assets
           merge-multiple: true
+      - run: node scripts/build-pro-catalog.cjs pro-assets
       - name: Publish separate free preview
         env:
           GH_TOKEN: ${{ github.token }}
@@ -63,5 +69,3 @@ jobs:
           else
             gh release create velora-pro-latest pro-assets/* --title 'Velora Pro — Free preview' --notes-file docs/velora-pro.md --prerelease --latest=false
           fi
-
-# Pro 0.4.1: new branding, Reson playback and display-state fixes.
