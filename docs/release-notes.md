@@ -9,3 +9,7 @@ Addresses work inside Nexora. This installer is an unsigned preview release; pub
 Nexora bundles the Velora installer: open velora.nex and choose Install Velora. Both applications include in-app updates in Settings, with separate feeds, download progress, integrity checks, and user-controlled installation/restart.
 
 Velora Studio now supports owner-protected app publishing. Store users can install, open, update and uninstall those sandboxed web apps; installed bundles work offline. Public developer submissions and native executable app uploads are not supported.
+Version 0.2.1 fixes Nexora's window height and colors inside Velora, removes visible Velora scrollbars while preserving content scrolling, improves the calculator layout, and fixes stopwatch pause/resume timing. Windows shortcut icons now include nine sizes for sharper rendering at different display scaling levels.
+
+Twelve new free apps: Tasks, Focus, Converter, Calendar, Sketch, Passwords, Text Tools, Memory, World Clock, Random Picker, Color Studio and Percentages. Tasks save locally; Sketch supports undo and PNG export. Existing desktop data is retained.
+
