@@ -27,4 +27,6 @@ jobs:
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "preview-${{ github.run_number }}" "release/Nexora-Setup.exe" --title "Nexora Windows preview" --notes-file docs/release-notes.md --latest
+        run: |
+          $version = node -p "require('./package.json').version"
+          gh release create "v$version-build.${{ github.run_number }}" "release/Nexora-Setup.exe" "release/Nexora-Setup.exe.blockmap" "release/nexora.yml" "release-velora/Velora-Setup.exe" "release-velora/Velora-Setup.exe.blockmap" "release-velora/velora.yml" --title "Nexora and Velora $version" --notes-file docs/release-notes.md --latest
