@@ -6,7 +6,7 @@ module.exports=function updates(win,velora){
  if(process.platform==="darwin")return require("./mac-updates.cjs")(win);
  let state={status:app.isPackaged?'idle':'development',version:app.getVersion(),progress:0};let busy=false;let downloadToken;const network=require('./network-state.cjs');const unsubscribe=network.subscribe(()=>{if(!network.allowed('updates')){downloadToken?.cancel();emit({status:'offline',error:'Updates stopped because Online mode or updates were disabled.'});}});win.once('closed',()=>{unsubscribe();downloadToken?.cancel();});
  const emit=patch=>{state={...state,...patch};if(!win.isDestroyed())win.webContents.send('nexora:update-state',state);};
- autoUpdater.autoDownload=false;autoUpdater.autoInstallOnAppQuit=false;autoUpdater.allowPrerelease=false;autoUpdater.channel=process.env.VELORA_APP||(velora?'velora':'nexora');autoUpdater.allowDowngrade=false;
+ autoUpdater.autoDownload=false;autoUpdater.autoInstallOnAppQuit=false;autoUpdater.allowPrerelease=false;autoUpdater.channel=process.env.VELORA_APP||(process.env.VELORA_PRO==='1'?'velora-pro':velora?'velora':'nexora');autoUpdater.allowDowngrade=false;if(process.env.VELORA_PRO==='1')autoUpdater.setFeedURL({provider:'generic',url:'https://github.com/coldzeeyt/nexora/releases/download/velora-pro-latest',channel:'velora-pro'});
  autoUpdater.netSession.setPermissionRequestHandler((_wc,_permission,done)=>done(false));
  autoUpdater.netSession.webRequest.onBeforeRequest((details,done)=>done({cancel:!require('./network-state.cjs').allowed('updates')||!allowedUpdateUrl(details.url)}));
  autoUpdater.on('checking-for-update',()=>emit({status:'checking',error:undefined}));
