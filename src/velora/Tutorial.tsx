@@ -16,8 +16,6 @@ const steps=[
  ['Plixo: play and collect','Play games, track local achievements and find community creations. Saved achievements remain available offline.','plixo'],
  ['Forma: documents and publishing','Create and edit private documents. Export copies, save to your private cloud library, or publish deliberately to the community or a Nexora address.','forma'],
  ['Zento: your community feed','Write posts, discover people, open public profiles and report problems. Only posted content enters the community feed.','zento'],
- ['Orbi: create a world','Paint a tile map, save it locally, and explore it with the movement controls. Publish a map to let other people discover and explore it.','orbi'],
- ['Mira: plans and events','Create personal events with start and end times. Keep them local or private in the cloud, and choose explicitly which events to share.','mira'],
  ['Fluxa: create graphics','Draw with brush and color controls, undo strokes and export your work. Your canvas becomes public only after an explicit publishing action.','fluxa'],
  ['Forge: make your own apps','Forge is the renamed app-building Studio. Edit HTML, CSS and JavaScript and run an isolated preview. Owner-paired developer access enables Store publishing.','studio'],
  ['Store: install community apps','Discover published apps, install or update them, and remove them anytime. Installed web apps work offline and cannot access your identity token or desktop files.','store'],
