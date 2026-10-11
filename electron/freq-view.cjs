@@ -22,6 +22,7 @@ module.exports=function connectFreq(win){
   if(!view){
    view=new WebContentsView({webPreferences:{session:ses,nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true}});
    view.webContents.setWindowOpenHandler(()=>({action:'deny'}));
+   require('./shortcuts.cjs')(view.webContents,win);
    const restrict=(event,url)=>{try{if(new URL(url).origin!==ORIGIN)event.preventDefault();}catch{event.preventDefault();}};
    view.webContents.on('will-navigate',restrict);view.webContents.on('will-redirect',restrict);
    // Remote project pages receive no Nexora preload or privileged bridge.
