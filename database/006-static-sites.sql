@@ -1,0 +1,10 @@
+BEGIN;
+SELECT pg_advisory_xact_lock(hashtext('nexora:static-sites'));
+ALTER TABLE websites ADD COLUMN IF NOT EXISTS draft_manifest jsonb NOT NULL DEFAULT '{}';
+ALTER TABLE websites ADD COLUMN IF NOT EXISTS published_manifest jsonb NOT NULL DEFAULT '{}';
+ALTER TABLE websites ADD COLUMN IF NOT EXISTS published_html text;
+ALTER TABLE websites ADD COLUMN IF NOT EXISTS published_title text;
+ALTER TABLE websites ADD COLUMN IF NOT EXISTS published_description text;
+UPDATE websites SET published_html=html,published_title=title,published_description=description WHERE published=true AND published_html IS NULL;
+CREATE INDEX IF NOT EXISTS websites_search_idx ON websites USING gin(to_tsvector('simple',coalesce(published_title,'') || ' ' ||coalesce(published_description,'')||' '||domain));
+COMMIT;
