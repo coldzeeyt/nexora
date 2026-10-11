@@ -17,8 +17,8 @@ API: https://nexora-api-production-90da.up.railway.app
 - Complete static-site ZIP uploads, saved-site editing, drafts and separate published versions.
 - Published-site search, extension filters, domain management and authenticated moderation.
 - Self-hosted AI answers and summaries, with no API key or per-user payment.
-- Real Freq integration at freq.zen and Solo Live at solo.zen.
-- A future Velora download entry at velora.nex. Velora itself has NOT been built.
+- Community sites are added and published through Nexora Studio; manually linked sites have been removed.
+- Velora Desktop: an independent Windows virtual desktop with Nexora built in. Download through velora.nex. See docs/velora.md for desktop apps, storage and build instructions.
 
 ## Run and package
 
@@ -29,6 +29,7 @@ npm run build
 npm run desktop
 npm test
 npm run dist
+npm run dist:velora
 ```
 
 Installer output: `release/Nexora-Setup.exe`. Windows icons use the approved textured white angular N. The installer registers Nexora addresses with Windows. Public release builds run through `.github/workflows/windows-release.yml`; dispatch it or update `release-trigger.json` to release again.
@@ -52,3 +53,4 @@ Uploaded scripts run in sandboxed frames without Node, a Nexora bridge, parent a
 The installer is an unsigned preview. Email recovery is unavailable; save the private recovery code. AI is a small model and can make mistakes. Solo live playback requires an active host. Freq retains its own account system and approved video sources; camera/microphone access is currently denied in its isolated session. Browser tabs reload pages when switching rather than retaining every page in memory.
 
 See `docs/architecture.md`, `docs/studio.md` and `docs/release-notes.md`.
+
