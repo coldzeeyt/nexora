@@ -1,0 +1,7 @@
+const fs=require('node:fs');const path=require('node:path');const {app,ipcMain}=require('electron');
+const policy=require('../shared/network-features.cjs');let online=false,features=policy.normalize();try{const settings=JSON.parse(fs.readFileSync(path.join(app.getPath('userData'),'velora','desktop.json'),'utf8')).settings;online=settings?.networkOnline===true;features=policy.normalize(settings?.networkFeatures);if(!settings?.networkFeatures&&settings?.online===true)features.browser=true;}catch{}
+const listeners=new Set();exports.enabled=()=>process.env.VELORA_DESKTOP!=='1'||online;
+exports.allowed=feature=>exports.enabled()&&(feature==='identity'||process.env.VELORA_DESKTOP!=='1'||features[feature]===true);
+exports.allowedApi=value=>{try{return policy.apiFeatures(new URL(value).pathname).some(exports.allowed);}catch{return false;}};
+exports.subscribe=callback=>{listeners.add(callback);return()=>listeners.delete(callback);};
+exports.install=win=>ipcMain.handle('velora:network',(event,operation,value)=>{if(event.sender!==win.webContents||event.senderFrame!==win.webContents.mainFrame||!event.senderFrame.url.startsWith('file://'))throw Error('Access denied');if(operation==='set'&&typeof value==='boolean')online=value;if(operation==='configure'&&value&&typeof value.online==='boolean'){online=value.online;features=policy.normalize(value.features);}if(['set','configure'].includes(operation))for(const listener of listeners)listener(online);return {online,features};});
