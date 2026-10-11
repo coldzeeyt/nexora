@@ -1,0 +1,3 @@
+const keys=['velora-pro-workspace','velora-pro-layouts','velora-pro-widgets','velora-pro-routines','velora-pro-pins','velora-pro-recent-files','velora-pro-theme-presets'];
+export function collectProPreferences(){const result:Record<string,string>={};for(const key of keys){const value=localStorage.getItem(key);if(value&&value.length<=1024*1024)result[key]=value;}return result;}
+export function restoreProPreferences(value:Record<string,string>){for(const key of keys){const raw=value[key];if(typeof raw==='string'&&raw.length<=1024*1024){try{JSON.parse(raw);localStorage.setItem(key,raw);}catch{}}else localStorage.removeItem(key);}}
