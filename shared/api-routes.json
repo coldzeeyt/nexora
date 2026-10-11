@@ -1,0 +1,242 @@
+{
+  "nomi-me": [
+    "GET",
+    "/v1/nomi/me"
+  ],
+  "nomi-save": [
+    "PUT",
+    "/v1/nomi/me"
+  ],
+  "nomi-users": [
+    "GET",
+    "/v1/nomi/users"
+  ],
+  "nomi-profile": [
+    "GET",
+    "/v1/nomi/profile/"
+  ],
+  "records-list": [
+    "GET",
+    "/v1/ecosystem/records"
+  ],
+  "record-save": [
+    "POST",
+    "/v1/ecosystem/records"
+  ],
+  "record-remove": [
+    "DELETE",
+    "/v1/ecosystem/records/"
+  ],
+  "assets-list": [
+    "GET",
+    "/v1/ecosystem/assets"
+  ],
+  "asset-upload": [
+    "POST",
+    "/v1/ecosystem/assets"
+  ],
+  "asset-get": [
+    "GET",
+    "/v1/ecosystem/assets/"
+  ],
+  "asset-remove": [
+    "DELETE",
+    "/v1/ecosystem/assets/"
+  ],
+  "ecosystem-report": [
+    "POST",
+    "/v1/ecosystem/reports"
+  ],
+  "kivo-friends": [
+    "GET",
+    "/v1/kivo/friends"
+  ],
+  "kivo-request": [
+    "POST",
+    "/v1/kivo/friends"
+  ],
+  "kivo-friend-action": [
+    "PATCH",
+    "/v1/kivo/friends"
+  ],
+  "kivo-block": [
+    "POST",
+    "/v1/kivo/blocks"
+  ],
+  "kivo-list": [
+    "GET",
+    "/v1/kivo/conversations"
+  ],
+  "kivo-create": [
+    "POST",
+    "/v1/kivo/conversations"
+  ],
+  "kivo-delete": [
+    "DELETE",
+    "/v1/kivo/conversations/"
+  ],
+  "kivo-messages": [
+    "GET",
+    "/v1/kivo/messages/"
+  ],
+  "kivo-send": [
+    "POST",
+    "/v1/kivo/messages/"
+  ],
+  "kivo-read": [
+    "POST",
+    "/v1/kivo/read/"
+  ],
+  "kivo-spaces": [
+    "GET",
+    "/v1/kivo/spaces"
+  ],
+  "kivo-space-create": [
+    "POST",
+    "/v1/kivo/spaces"
+  ],
+  "kivo-channel-create": [
+    "POST",
+    "/v1/kivo/channels/"
+  ],
+  "kivo-invite": [
+    "POST",
+    "/v1/kivo/invitations"
+  ],
+  "kivo-join": [
+    "POST",
+    "/v1/kivo/join"
+  ],
+  "kivo-roles": [
+    "PATCH",
+    "/v1/kivo/roles/"
+  ],
+  "kivo-message-remove": [
+    "DELETE",
+    "/v1/kivo/messages/"
+  ],
+  "store-list": [
+    "GET",
+    "/v1/apps"
+  ],
+  "store-files": [
+    "GET",
+    "/v1/apps/"
+  ],
+  "admin-app-list": [
+    "GET",
+    "/v1/admin/apps"
+  ],
+  "admin-app-publish": [
+    "POST",
+    "/v1/admin/apps"
+  ],
+  "admin-app-state": [
+    "PATCH",
+    "/v1/admin/apps/"
+  ],
+  "admin-app-remove": [
+    "DELETE",
+    "/v1/admin/apps/"
+  ],
+  "register": [
+    "POST",
+    "/v1/auth/register"
+  ],
+  "login": [
+    "POST",
+    "/v1/auth/login"
+  ],
+  "recover": [
+    "POST",
+    "/v1/auth/recover"
+  ],
+  "logout": [
+    "POST",
+    "/v1/auth/logout"
+  ],
+  "me": [
+    "GET",
+    "/v1/me"
+  ],
+  "profile": [
+    "PATCH",
+    "/v1/me"
+  ],
+  "recovery": [
+    "POST",
+    "/v1/me/recovery"
+  ],
+  "deleteAccount": [
+    "DELETE",
+    "/v1/me"
+  ],
+  "sites": [
+    "GET",
+    "/v1/my/sites"
+  ],
+  "discover": [
+    "GET",
+    "/v1/sites"
+  ],
+  "create": [
+    "POST",
+    "/v1/my/sites"
+  ],
+  "availability": [
+    "GET",
+    "/v1/domains/"
+  ],
+  "publish": [
+    "PATCH",
+    "/v1/my/sites/"
+  ],
+  "remove": [
+    "DELETE",
+    "/v1/my/sites/"
+  ],
+  "report": [
+    "POST",
+    "/v1/reports"
+  ],
+  "update": [
+    "PUT",
+    "/v1/my/sites/"
+  ],
+  "files": [
+    "GET",
+    "/v1/my/sites/"
+  ],
+  "unpack": [
+    "POST",
+    "/v1/my/preview"
+  ],
+  "search": [
+    "GET",
+    "/v1/search"
+  ],
+  "health": [
+    "GET",
+    "/health"
+  ],
+  "admin-session": [
+    "GET",
+    "/v1/admin/usage"
+  ],
+  "admin-usage": [
+    "GET",
+    "/v1/admin/usage"
+  ],
+  "admin-reports": [
+    "GET",
+    "/v1/admin/reports"
+  ],
+  "admin-suspend": [
+    "PATCH",
+    "/v1/admin/sites/"
+  ],
+  "admin-remove": [
+    "DELETE",
+    "/v1/admin/sites/"
+  ]
+}
