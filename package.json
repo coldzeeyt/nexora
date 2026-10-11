@@ -1,17 +1,20 @@
 {
   "name": "nexora",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "desktop": "electron .",
-    "build": "node scripts/branding.cjs && tsc --noEmit && vite build",
+    "build": "node scripts/branding.cjs && node scripts/velora-branding.cjs && tsc --noEmit && vite build",
     "test": "node --test tests/*.test.js",
-    "dist": "npm run build && electron-builder --win nsis"
+    "dist": "npm run dist:velora && npm run build && electron-builder --win nsis --publish never",
+    "velora": "electron electron/velora-main.cjs",
+    "dist:velora": "npm run build && electron-builder --config velora-builder.cjs --win nsis --publish never"
   },
   "dependencies": {
+    "electron-updater": "^6.8.9",
     "lucide-react": "^1.31.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -52,7 +55,19 @@
           "nexora"
         ]
       }
-    ]
+    ],
+    "extraResources": [
+      {
+        "from": "release-velora/Velora-Setup.exe",
+        "to": "Velora-Setup.exe"
+      }
+    ],
+    "publish": {
+      "owner": "coldzeeyt",
+      "repo": "nexora",
+      "provider": "github",
+      "channel": "nexora"
+    }
   },
   "allowScripts": {
     "electron@35.7.5": true,
