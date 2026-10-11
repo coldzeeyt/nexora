@@ -42,3 +42,9 @@ If a download fails, check the latest GitHub Actions run and Releases page. If a
 
 
 
+
+## Nexora accounts in Velora
+Use Sign in with Nexora in the top bar or open Nexora Account from the launcher. Use the same username and password as standalone Nexora, or create a free account. The embedded browser and Velora tools share that login session within Velora; the standalone browser retains its own encrypted session. Local desktop files are not cloud synced. Developer Store publishing additionally requires the owner's protected access key.
+
+## Online
+Online is a separate, minimal real-web browser, disabled by default. Enable it in Velora Settings. It has one page, an address bar, Back, Forward and Refresh. Public HTTPS websites such as YouTube open in a separate Chromium session with no Nexora or Velora bridge. Permissions, popups and downloads are denied. Hidden pages are throttled and media paused; closing Online or disabling it destroys the web view. Local/intranet addresses and non-HTTPS navigation are blocked. Nexora itself remains restricted to its own network.
