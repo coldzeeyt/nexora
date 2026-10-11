@@ -1,0 +1,184 @@
+name: Software release
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/software-release.yml']
+permissions:
+  contents: write
+concurrency:
+  group: software-release
+  cancel-in-progress: false
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --prefix apps/api --ignore-scripts --no-audit --no-fund
+      - run: npm test
+      - run: npm run build
+  windows:
+    needs: checks
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - run: npm run dist
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - run: node scripts/build-installer.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-core
+          path: |
+            release/*.exe
+            release/*.blockmap
+            release/nexora.yml
+            release-velora/*.exe
+            release-velora/*.blockmap
+            release-velora/velora.yml
+            release-installer/win/*.exe
+          compression-level: 0
+  standalone:
+    needs: checks
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        app: [nomi, kivo, reson, luma, vexa, nuvio, plixo, forma, zento, fluxa, online, studio]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - run: npm run build
+      - run: node scripts/build-platform.cjs
+        env:
+          BUILD_APP: ${{ matrix.app }}
+          BUILD_PLATFORM: win
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-${{ matrix.app }}
+          path: |
+            release-platform/win/${{ matrix.app }}/*.exe
+            release-platform/win/${{ matrix.app }}/*.blockmap
+            release-platform/win/${{ matrix.app }}/${{ matrix.app }}.yml
+          compression-level: 0
+  mac:
+    needs: checks
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        app: [nexora, velora, nomi, kivo, reson, luma, vexa, nuvio, plixo, forma, zento, fluxa, online, studio]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - run: npm run build
+      - run: node scripts/build-platform.cjs
+        env:
+          BUILD_APP: ${{ matrix.app }}
+          BUILD_PLATFORM: mac
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Verify disk images
+        run: find release-platform/mac -name '*.dmg' -exec hdiutil verify '{}' \;
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac-${{ matrix.app }}
+          path: |
+            release-platform/mac/${{ matrix.app }}/*.dmg
+            release-platform/mac/${{ matrix.app }}/*-mac.json
+          compression-level: 0
+  mac-installer:
+    needs: checks
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - run: npm run build
+      - run: node scripts/build-installer.cjs
+        env:
+          BUILD_PLATFORM: mac
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac-installer
+          path: release-installer/mac/*.dmg
+          compression-level: 0
+  android-test:
+    needs: checks
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [velora, nexora]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+      - run: npm install --no-audit --no-fund
+      - run: npm run android:prepare
+        env:
+          STANDALONE_APP: ${{ matrix.app }}
+      - run: chmod +x android/gradlew && cd android && ./gradlew assembleDebug
+      - run: node scripts/package-android.cjs
+        env:
+          STANDALONE_APP: ${{ matrix.app }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-test-${{ matrix.app }}
+          path: release-android/*-test.apk
+          compression-level: 0
+  publish:
+    needs: [windows, standalone, mac, mac-installer, android-test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: windows-*
+          path: release-assets
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: mac-*
+          path: release-assets
+          merge-multiple: true
+      - name: Flatten artifacts
+        run: |
+          mkdir -p flat-assets
+          find release-assets -type f \( -name '*.exe' -o -name '*.blockmap' -o -name '*.dmg' -o -name '*.json' -o -name '*.yml' \) -exec cp '{}' flat-assets/ \;
+      - run: node scripts/build-catalog.cjs flat-assets
+      - name: Publish verified software
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(node -p "require('./package.json').version")
+          gh release create "v$version" flat-assets/* --title "Velora and Nexora $version" --notes-file docs/release-notes.md --latest
