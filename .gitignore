@@ -5,3 +5,10 @@ release/
 *.log
 build/
 release-velora/
+
+android/
+release-apps/
+release-platform/
+release-android/
+*.p12
+*.keystore
