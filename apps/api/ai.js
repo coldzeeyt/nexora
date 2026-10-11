@@ -1,5 +1,6 @@
-export async function summarize(question, {key=process.env.OPENROUTER_API_KEY,request=fetch}={}) {
-  if(!key) return {status:503,error:'AI is not connected yet. The network owner needs to configure the free AI provider.'};
+import {localSummary} from './local-ai.js';
+export async function summarize(question, {key=process.env.OPENROUTER_API_KEY,request=fetch,local=localSummary}={}) {
+  if(!key) return local(question);
   try {
     const response=await request('https://openrouter.ai/api/v1/chat/completions',{
       method:'POST',redirect:'error',signal:AbortSignal.timeout(30000),
