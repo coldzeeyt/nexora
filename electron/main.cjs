@@ -2,8 +2,8 @@ const {app,BrowserWindow,protocol,session,ipcMain,nativeImage} = require('electr
 const path = require('node:path');
 const {parseAddress} = require('../shared/address.cjs');
 protocol.registerSchemesAsPrivileged([{scheme:'nexora',privileges:{standard:true,secure:true,supportFetchAPI:true,corsEnabled:true}},{scheme:'velora-media',privileges:{standard:true,secure:true,supportFetchAPI:true,corsEnabled:true,stream:true}},{scheme:'nexora-preview',privileges:{standard:true,secure:true,supportFetchAPI:true,corsEnabled:true}}]);
-const velora=process.env.VELORA_DESKTOP==='1';const standalone=process.env.VELORA_APP;const product=standalone?require('../shared/standalone-apps.cjs')[standalone]:'Velora';if(standalone&&!product)throw Error('Unsupported app');
-if(velora){app.setName(product);app.setPath('userData',process.argv.find(a=>a.startsWith('--user-data-dir='))?.slice(16)||path.join(app.getPath('appData'),standalone?'VeloraApps/'+standalone:'Velora'));}
+const velora=process.env.VELORA_DESKTOP==='1';const standalone=process.env.VELORA_APP;const pro=process.env.VELORA_PRO==='1';const product=standalone?require('../shared/standalone-apps.cjs')[standalone]:pro?'Velora Pro':'Velora';if(standalone&&!product)throw Error('Unsupported app');
+if(velora){app.setName(product);app.setPath('userData',process.argv.find(a=>a.startsWith('--user-data-dir='))?.slice(16)||path.join(app.getPath('appData'),standalone?'VeloraApps/'+standalone:pro?'Velora Pro':'Velora'));}
 const network=require('./network-state.cjs');
 app.whenReady().then(() => {
  session.defaultSession.webRequest.onBeforeRequest((details,done) => done({cancel:!details.url.startsWith('file://') && !details.url.startsWith('nexora://') && !details.url.startsWith('nexora-preview://') && !(velora&&details.url.startsWith('velora-media://'))}));
@@ -41,7 +41,7 @@ app.whenReady().then(() => {
  session.defaultSession.on('will-download',event=>event.preventDefault());
  const initialAddress=process.argv.find(arg=>arg.startsWith('nexora://'));
  if(initialAddress)win.webContents.once('did-finish-load',()=>setTimeout(()=>{try{win.webContents.send('nexora:navigate',parseAddress(initialAddress).address);}catch{}},200));
- win.loadFile(path.join(__dirname,'../dist/index.html'),velora?{query:{desktop:'velora',...(standalone?{app:standalone}:{})}}:{});
+ win.loadFile(path.join(__dirname,'../dist/index.html'),velora?{query:{desktop:'velora',...(pro?{edition:'pro'}:{}),...(standalone?{app:standalone}:{})}}:{});
 
 });
 app.on('window-all-closed',()=>app.quit());
