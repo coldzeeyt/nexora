@@ -1,10 +1,12 @@
 const {ipcMain,app}=require('electron');
 const {autoUpdater}=require('electron-updater');
+const {CancellationToken}=require('builder-util-runtime');
 const {allowedUpdateUrl}=require('../shared/update-policy.cjs');
 module.exports=function updates(win,velora){
- let state={status:app.isPackaged?'idle':'development',version:app.getVersion(),progress:0};let busy=false;
+ if(process.platform==="darwin")return require("./mac-updates.cjs")(win);
+ let state={status:app.isPackaged?'idle':'development',version:app.getVersion(),progress:0};let busy=false;let downloadToken;const network=require('./network-state.cjs');const unsubscribe=network.subscribe(()=>{if(!network.allowed('updates')){downloadToken?.cancel();emit({status:'offline',error:'Updates stopped because Online mode or updates were disabled.'});}});win.once('closed',()=>{unsubscribe();downloadToken?.cancel();});
  const emit=patch=>{state={...state,...patch};if(!win.isDestroyed())win.webContents.send('nexora:update-state',state);};
- autoUpdater.autoDownload=false;autoUpdater.autoInstallOnAppQuit=false;autoUpdater.allowPrerelease=false;autoUpdater.channel=velora?'velora':'nexora';autoUpdater.allowDowngrade=false;
+ autoUpdater.autoDownload=false;autoUpdater.autoInstallOnAppQuit=false;autoUpdater.allowPrerelease=false;autoUpdater.channel=process.env.VELORA_APP||(velora?'velora':'nexora');autoUpdater.allowDowngrade=false;
  autoUpdater.netSession.setPermissionRequestHandler((_wc,_permission,done)=>done(false));
  autoUpdater.netSession.webRequest.onBeforeRequest((details,done)=>done({cancel:!require('./network-state.cjs').allowed('updates')||!allowedUpdateUrl(details.url)}));
  autoUpdater.on('checking-for-update',()=>emit({status:'checking',error:undefined}));
@@ -21,7 +23,7 @@ module.exports=function updates(win,velora){
   if(operation==='check'){await check();return state;}
   if(operation==='download'){
    if(!require('./network-state.cjs').allowed('updates')){emit({status:'offline',error:'Turn on Online mode to download updates.'});return state;}
-   if(busy||state.status!=='available')return state;busy=true;emit({status:'downloading',progress:0});try{await autoUpdater.downloadUpdate();}catch{emit({status:'error',error:'Could not download the update. Check your connection and try again.'});}finally{busy=false;}return state;
+   if(busy||state.status!=='available')return state;busy=true;emit({status:'downloading',progress:0});try{downloadToken=new CancellationToken();await autoUpdater.downloadUpdate(downloadToken);}catch{emit({status:'error',error:'Could not download the update. Check your connection and try again.'});}finally{busy=false;downloadToken=undefined;}return state;
   }
   if(operation==='install'&&state.status==='downloaded'){emit({status:'installing'});setTimeout(()=>autoUpdater.quitAndInstall(false,true),150);return state;}
   return state;
