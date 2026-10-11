@@ -1,10 +1,13 @@
 const {ipcMain,app,dialog}=require('electron');
 const fs=require('node:fs/promises');const path=require('node:path');const {randomUUID}=require('node:crypto');
 module.exports=win=>{
- const root=path.join(app.getPath('userData'),'velora');const target=path.join(root,'desktop.json');let pending=Promise.resolve();
+ const root=path.join(app.getPath('userData'),'velora');const target=path.join(root,'desktop.json');let pending=Promise.resolve();let canClose=false;let closeTimer;
+ win.on('close',event=>{if(canClose)return;event.preventDefault();if(closeTimer)return;win.webContents.send('velora:flush');closeTimer=setTimeout(()=>{canClose=true;win.close();},3000);});
  ipcMain.handle('velora:store',async(event,operation,payload)=>{
   if(event.sender!==win.webContents||event.senderFrame!==win.webContents.mainFrame||!event.senderFrame.url.startsWith('file://'))throw new Error('Access denied');
   try{
+   if(operation==='close-ready'){clearTimeout(closeTimer);closeTimer=undefined;await pending;canClose=true;win.close();return {ok:true};}
+   if(operation==='close-cancel'){clearTimeout(closeTimer);closeTimer=undefined;const result=await dialog.showMessageBox(win,{type:'warning',message:'Velora could not save your changes.',detail:'Keep the app open to try again, or close without saving the latest changes.',buttons:['Keep open','Close without saving'],defaultId:0,cancelId:0});if(result.response===1){canClose=true;win.close();}return {ok:true};}
    if(operation==='load'){await pending;try{return {data:JSON.parse(await fs.readFile(target,'utf8'))};}catch(e){if(e.code==='ENOENT')return {};throw e;}}
    if(operation==='save'){
     if(!payload||typeof payload!=='object'||JSON.stringify(payload).length>32*1024*1024)return {error:'Desktop storage is limited to 32 MB.'};
