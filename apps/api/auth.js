@@ -1,5 +1,6 @@
 import {scrypt as derive,randomBytes,createHash,timingSafeEqual,randomUUID} from 'node:crypto';
 import {promisify} from 'node:util';
+import {removeObjects} from './storage.js';
 const scrypt=promisify(derive);
 export const digest=token=>createHash('sha256').update(token).digest('hex');
 export async function hashPassword(password){const salt=randomBytes(16).toString('hex');const key=await scrypt(password,salt,64);return `${salt}:${key.toString('hex')}`;}
@@ -17,6 +18,5 @@ export function registerAuth(app,pool){
  const preHandler=requireUser(pool);
  app.get('/v1/me',{preHandler},async req=>({user:req.user}));
  app.post('/v1/auth/logout',{preHandler},async req=>{await pool.query('DELETE FROM sessions WHERE token_hash=$1',[req.tokenHash]);return {ok:true};});
- app.delete('/v1/me',{preHandler,schema:{body:{type:'object',additionalProperties:false,required:['password'],properties:{password:{type:'string',maxLength:128}}}}},async(req,reply)=>{const result=await pool.query('SELECT password_hash FROM users WHERE id=$1',[req.user.id]);if(!await verifyPassword(req.body.password,result.rows[0].password_hash))return reply.code(403).send({error:'Password confirmation failed.'});await pool.query('DELETE FROM users WHERE id=$1',[req.user.id]);return {ok:true};});
+ app.delete('/v1/me',{preHandler,schema:{body:{type:'object',additionalProperties:false,required:['password'],properties:{password:{type:'string',maxLength:128}}}}},async(req,reply)=>{const result=await pool.query('SELECT password_hash FROM users WHERE id=$1',[req.user.id]);if(!result.rowCount||!await verifyPassword(req.body.password,result.rows[0].password_hash))return reply.code(403).send({error:'Password confirmation failed.'});const client=await pool.connect();let manifests=[];try{await client.query('BEGIN');await client.query('SELECT pg_advisory_xact_lock(hashtext($1))',[req.user.id]);manifests=(await client.query('SELECT draft_manifest,published_manifest FROM websites WHERE owner_id=$1',[req.user.id])).rows.flatMap(row=>[row.draft_manifest,row.published_manifest]);await client.query('DELETE FROM users WHERE id=$1',[req.user.id]);await client.query('COMMIT');}catch(e){await client.query('ROLLBACK');throw e;}finally{client.release();}await removeObjects(manifests).catch(error=>app.log.warn({err:error},'Account asset cleanup failed'));return {ok:true};});
 }
-
