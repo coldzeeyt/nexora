@@ -1,0 +1,11 @@
+# Studio: first HTML publishing release
+
+Open studio.nex in the desktop app, create a free account, choose an address, upload an HTML file, preview it and save a draft. Click Publish on the saved site. Another Nexora client connected to the same backend can then visit that address. Publishing is free for users. There is no payment or subscription system.
+
+Current limits: 100 initial accounts, 5 sites per user, 512 KB per HTML file and 2 MB of HTML per account. Single HTML documents, inline CSS and text are supported. JavaScript, external images, embedded network content and downloads are blocked. ZIP uploads, uploaded asset folders, editing saved HTML, email verification, password reset and the visual builder remain later work. HTML is stored durably in PostgreSQL for this deliberately small first release; object storage is needed for future asset uploads.
+
+Passwords use salted scrypt. Session tokens expire in seven days and only their hashes are stored in PostgreSQL. The desktop keeps its token in main-process memory: restarting the app signs you out, and community frames never receive it. Do not put passwords or tokens in source files. No cookie authentication is used, so cross-origin pages cannot act through a session cookie.
+
+Registration requires both OPEN_REGISTRATION=true and a server-only NEXORA_ADMIN_TOKEN of at least 32 random characters. The administrator token is configured in Railway variables, not distributed to users. Signed-in users can report a site using the trusted toolbar. Operators can list GET /v1/admin/reports, suspend PATCH /v1/admin/sites/:domain with {"suspended":true}, unsuspend with false, or remove DELETE /v1/admin/sites/:domain, using Authorization: Bearer followed by that token. Suspended, unpublished and deleted sites are excluded from resolution and discovery. Never paste the operator token into community websites.
+
+Ownership is checked on publishing, unpublishing and deletion. Addresses are unique database keys, and official service names are reserved. Per-user quota checks and address creation run in a transaction under a user advisory lock. Public writes are rate limited. This remains an early release: verify the sandbox and moderation practices before increasing community size or enabling JavaScript.
