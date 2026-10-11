@@ -65,7 +65,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if gh release view velora-pro-latest >/dev/null 2>&1; then
-            gh release upload velora-pro-latest pro-assets/* --clobber
+            gh release upload velora-pro-latest pro-assets/*.exe pro-assets/*.dmg pro-assets/*.yml pro-assets/*.json pro-assets/*.blockmap --clobber
           else
-            gh release create velora-pro-latest pro-assets/* --title 'Velora Pro — Free preview' --notes-file docs/velora-pro.md --prerelease --latest=false
+            gh release create velora-pro-latest pro-assets/*.exe pro-assets/*.dmg pro-assets/*.yml pro-assets/*.json pro-assets/*.blockmap --title 'Velora Pro — Free preview' --notes-file docs/velora-pro.md --prerelease --latest=false
           fi
+
+# Flatten combined Pro and Installer artifacts before catalog verification.
