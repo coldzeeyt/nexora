@@ -4,8 +4,8 @@ export async function loadModel(){
  if(!generatorPromise)generatorPromise=(async()=>{
   const {pipeline,env}=await import('@huggingface/transformers');
   env.cacheDir=process.env.NEXORA_MODEL_CACHE||'/app/models';
-  return pipeline('text-generation','onnx-community/SmolLM2-135M-Instruct-ONNX-MHA',{
-   revision:'5b6682c',dtype:'q8',device:'cpu',session_options:{intraOpNumThreads:2,interOpNumThreads:1}
+  return pipeline('text-generation','onnx-community/Qwen2.5-0.5B-Instruct',{
+   revision:'516c8d0',dtype:'q8',device:'cpu',session_options:{intraOpNumThreads:2,interOpNumThreads:1}
   });
  })().catch(error=>{generatorPromise=undefined;throw error;});
  return generatorPromise;
@@ -16,7 +16,7 @@ export async function localSummary(question){
  try{
   const generator=await loadModel();
   const output=await generator([
-   {role:'system',content:'You are a helpful assistant. Give a short, clear answer in one paragraph. If asked to summarize text, summarize only the provided text.'},
+   {role:'system',content:'You are Nexora AI. Answer briefly in one plain-text paragraph. For summaries, preserve names exactly and use ONLY facts explicitly stated in the supplied text. Do not add assumptions, device support, features, or background facts. For questions, be accurate and acknowledge uncertainty. You cannot browse the internet.'},
    {role:'user',content:question}
   ],{max_new_tokens:160,do_sample:false,repetition_penalty:1.1});
   const generated=output[0]?.generated_text;
@@ -25,3 +25,4 @@ export async function localSummary(question){
  }catch(error){console.error('Local AI inference failed:',error.message);return {status:503,error:'Nexora AI is temporarily unavailable. Please try again.'};}
  finally{running=false;}
 }
+
