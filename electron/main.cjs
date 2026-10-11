@@ -24,7 +24,7 @@ app.whenReady().then(() => {
  require('./studio-api.cjs')(win,apiOrigin,apiSession);
  require('./app-downloads.cjs')(win);
  require('./updates.cjs')(win,velora);
- if(velora)require('./velora-store.cjs')(win);
+ if(velora){require('./velora-store.cjs')(win);require('./online-view.cjs')(win);}
  
  require('./preview.cjs')(win,protocol);
  require('./downloads.cjs')(win,apiOrigin,apiSession);
@@ -42,6 +42,7 @@ app.whenReady().then(() => {
 
 });
 app.on('window-all-closed',()=>app.quit());
+
 
 
 
