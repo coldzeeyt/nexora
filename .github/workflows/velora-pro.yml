@@ -63,3 +63,5 @@ jobs:
           else
             gh release create velora-pro-latest pro-assets/* --title 'Velora Pro — Free preview' --notes-file docs/velora-pro.md --prerelease --latest=false
           fi
+
+# Pro 0.4.1: new branding, Reson playback and display-state fixes.
