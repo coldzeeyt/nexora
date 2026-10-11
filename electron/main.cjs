@@ -2,8 +2,8 @@ const {app,BrowserWindow,protocol,session,ipcMain,nativeImage} = require('electr
 const path = require('node:path');
 const {parseAddress} = require('../shared/address.cjs');
 protocol.registerSchemesAsPrivileged([{scheme:'nexora',privileges:{standard:true,secure:true,supportFetchAPI:true,corsEnabled:true}},{scheme:'velora-media',privileges:{standard:true,secure:true,supportFetchAPI:true,corsEnabled:true,stream:true}},{scheme:'nexora-preview',privileges:{standard:true,secure:true,supportFetchAPI:true,corsEnabled:true}}]);
-const velora=process.env.VELORA_DESKTOP==='1';
-if(velora){app.setName('Velora');app.setPath('userData',process.argv.find(a=>a.startsWith('--user-data-dir='))?.slice(16)||path.join(app.getPath('appData'),'Velora'));}
+const velora=process.env.VELORA_DESKTOP==='1';const standalone=process.env.VELORA_APP;const product=standalone?require('../shared/standalone-apps.cjs')[standalone]:'Velora';if(standalone&&!product)throw Error('Unsupported app');
+if(velora){app.setName(product);app.setPath('userData',process.argv.find(a=>a.startsWith('--user-data-dir='))?.slice(16)||path.join(app.getPath('appData'),standalone?'VeloraApps/'+standalone:'Velora'));}
 const network=require('./network-state.cjs');
 app.whenReady().then(() => {
  session.defaultSession.webRequest.onBeforeRequest((details,done) => done({cancel:!details.url.startsWith('file://') && !details.url.startsWith('nexora://') && !details.url.startsWith('nexora-preview://') && !(velora&&details.url.startsWith('velora-media://'))}));
@@ -14,7 +14,7 @@ app.whenReady().then(() => {
  apiSession.webRequest.onBeforeRequest((details,done)=>{let allowed=false;try{allowed=network.allowedApi(details.url)&&!!apiOrigin&&new URL(details.url).origin===apiOrigin;}catch{}done({cancel:!allowed});});
  require('./site-protocol.cjs')(protocol,apiOrigin,apiSession);
  if(!velora&&app.isPackaged&&process.env.NEXORA_TEST_HIDDEN!=='1')app.setAsDefaultProtocolClient('nexora');
- const win=new BrowserWindow({show:process.env.NEXORA_TEST_HIDDEN!=='1',width:1280,height:850,minWidth:360,minHeight:560,title:velora?'Velora':'Nexora',icon:nativeImage.createFromDataURL(velora?require('./velora-brand.cjs'):require('./branding.cjs').image),backgroundColor:'#fafafa',autoHideMenuBar:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true,backgroundThrottling:process.env.NEXORA_TEST_HIDDEN!=='1'}});
+ const win=new BrowserWindow({show:process.env.NEXORA_TEST_HIDDEN!=='1',width:1280,height:850,minWidth:360,minHeight:560,title:velora?product:'Nexora',icon:nativeImage.createFromDataURL(standalone?require('./standalone-branding.cjs')[standalone]:velora?require('./velora-brand.cjs'):require('./branding.cjs').image),backgroundColor:'#fafafa',autoHideMenuBar:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true,backgroundThrottling:process.env.NEXORA_TEST_HIDDEN!=='1'}});
  ipcMain.handle('nexora:ask',async(event,question)=>{
   if(event.sender!==win.webContents||event.senderFrame!==win.webContents.mainFrame||!event.senderFrame.url.startsWith('file://'))throw new Error('Access denied');
   if(typeof question!=='string'||!question.trim()||question.length>2000)return {error:'Enter up to 2,000 characters.'};
@@ -40,7 +40,7 @@ app.whenReady().then(() => {
  session.defaultSession.on('will-download',event=>event.preventDefault());
  const initialAddress=process.argv.find(arg=>arg.startsWith('nexora://'));
  if(initialAddress)win.webContents.once('did-finish-load',()=>setTimeout(()=>{try{win.webContents.send('nexora:navigate',parseAddress(initialAddress).address);}catch{}},200));
- win.loadFile(path.join(__dirname,'../dist/index.html'),velora?{query:{desktop:'velora'}}:{});
+ win.loadFile(path.join(__dirname,'../dist/index.html'),velora?{query:{desktop:'velora',...(standalone?{app:standalone}:{})}}:{});
 
 });
 app.on('window-all-closed',()=>app.quit());
