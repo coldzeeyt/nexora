@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "desktop": "electron .",
-    "build": "tsc --noEmit && vite build",
+    "build": "node scripts/branding.cjs && tsc --noEmit && vite build",
     "test": "node --test tests/*.test.js",
     "dist": "npm run build && electron-builder --win nsis"
   },
@@ -34,7 +34,8 @@
       "shared/**"
     ],
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "build/nexora.ico"
     },
     "nsis": {
       "artifactName": "Nexora-Setup.exe",
