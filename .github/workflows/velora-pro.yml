@@ -1,0 +1,65 @@
+name: Velora Pro preview
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/velora-pro.yml']
+permissions:
+  contents: write
+concurrency:
+  group: velora-pro-preview
+  cancel-in-progress: false
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: win
+          - os: macos-latest
+            platform: mac
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --prefix apps/api --ignore-scripts --no-audit --no-fund
+      - run: npm test
+      - run: npm run build
+      - run: node scripts/build-platform.cjs
+        env:
+          BUILD_APP: velora-pro
+          BUILD_PLATFORM: ${{ matrix.platform }}
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pro-${{ matrix.platform }}
+          path: |
+            release-platform/${{ matrix.platform }}/velora-pro/*.exe
+            release-platform/${{ matrix.platform }}/velora-pro/*.blockmap
+            release-platform/${{ matrix.platform }}/velora-pro/*.yml
+            release-platform/${{ matrix.platform }}/velora-pro/*.dmg
+            release-platform/${{ matrix.platform }}/velora-pro/*-mac.json
+          compression-level: 0
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: pro-*
+          path: pro-assets
+          merge-multiple: true
+      - name: Publish separate free preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view velora-pro-latest >/dev/null 2>&1; then
+            gh release upload velora-pro-latest pro-assets/* --clobber
+          else
+            gh release create velora-pro-latest pro-assets/* --title 'Velora Pro — Free preview' --notes-file docs/velora-pro.md --prerelease --latest=false
+          fi
