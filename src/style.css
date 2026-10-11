@@ -81,3 +81,5 @@ iframe{animation:content-enter 240ms ease both}
 .browser>main{padding-bottom:calc(24px + var(--safe-bottom))}
 .browser>.solo-page{padding-bottom:var(--safe-bottom)}
 .browser>.freq-page,.browser>iframe{height:calc(100dvh - 101px - var(--safe-top) - var(--safe-bottom))}
+.browser>header .brand{display:flex;align-items:center;justify-content:center;width:28px;height:28px;background:#202020;border-radius:6px;flex-shrink:0}
+.browser>header .brand img{width:26px;height:26px;object-fit:contain}
