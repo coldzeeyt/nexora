@@ -1,3 +1,4 @@
+import {useGlassPointer} from './Appearance';
 import {useBackups} from './Backup';
 import React,{useEffect,useRef,useState} from 'react';
 import Browser from '../Browser';
@@ -17,7 +18,7 @@ import {studioApi} from '../studio-client';
 export function Velora(){
  const [data,setData]=useState<DesktopData>(structuredClone(defaults));const [ready,setReady]=useState(false);const [boot,setBoot]=useState(true);const [windows,setWindows]=useState<DesktopWindow[]>([]);const [active,setActive]=useState<number>();const [launcher,setLauncher]=useState(false);const [query,setQuery]=useState('');const [center,setCenter]=useState(false);const [notifications,setNotifications]=useState<{id:number;text:string;time:string}[]>([]);const [now,setNow]=useState(new Date());const [status,setStatus]=useState('Saved locally');const area=useRef<HTMLDivElement>(null);const nextId=useRef(1);const saveId=useRef(0);const initial=useRef(false);
  const [username,setUsername]=useState("");const [userId,setUserId]=useState("");const [tutorialVisible,setTutorialVisible]=useState(false);const [browserAddress,setBrowserAddress]=useState("home.nex");useEffect(()=>{const update=()=>void studioApi("me").then(r=>{setUsername(r.user?.username||"");setUserId(r.user?.id||"");});update();window.addEventListener("velora:account-changed",update);window.addEventListener("velora:network-changed",update);return()=>{window.removeEventListener("velora:account-changed",update);window.removeEventListener("velora:network-changed",update);};},[]);
- useBackups(data,ready);
+ useBackups(data,ready);useGlassPointer(data.settings.theme==='glass'&&data.settings.animations);
  const latestData=useRef({data,ready});latestData.current={data,ready};useEffect(()=>window.velora?.onFlush(()=>{void(async()=>{const latest=latestData.current;if(latest.ready){const result=await window.velora?.store("save",latest.data);if(result?.error){setStatus(result.error);await window.velora?.store("close-cancel");return;}}await window.velora?.store("close-ready");})();}),[]);
  const bounds=()=>({width:area.current?.clientWidth||innerWidth,height:area.current?.clientHeight||innerHeight-104});
  const notify=(text:string)=>{if(data.settings.notifications)setNotifications(n=>[{id:Date.now(),text,time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})},...n].slice(0,30));};
@@ -35,7 +36,7 @@ export function Velora(){
  useEffect(()=>{if(ready)void window.velora?.network('configure',{online:data.settings.networkOnline,features:data.settings.networkFeatures}).then(()=>{void window.onlineBrowser?.run({action:'enable',enabled:data.settings.networkFeatures.browser&&data.settings.networkOnline});window.dispatchEvent(new Event('velora:network-changed'));});},[ready,data.settings.networkFeatures,data.settings.networkOnline]);
  const props={data,setData,notify,open};
  if(boot)return <div className="velora-boot"><div className="v-logo">∨</div><h1>velora.</h1><span>YOUR SPACE, LOADING.</span><div className="v-boot-line"/></div>;
- return <div className={'velora-desktop '+(data.settings.dark?'v-dark':'v-light')+(data.settings.animations?'':' v-still')} data-wallpaper={data.settings.wallpaper}>
+ return <div className={'velora-desktop '+(data.settings.dark?'v-dark':'v-light')+(data.settings.animations?'':' v-still')} data-wallpaper={data.settings.wallpaper} data-appearance={data.settings.theme} data-cursor={data.settings.cursor}><div className="v-glass-background" aria-hidden="true"/>
  <div className="v-top"><strong>velora.</strong><span>Your desktop</span><label className="eco-network-toggle"><input aria-label="Online mode" type="checkbox" checked={data.settings.networkOnline} onChange={e=>setData(d=>({...d,settings:{...d.settings,networkOnline:e.target.checked}}))}/>{data.settings.networkOnline?"Online mode":"Offline mode"}</label><button className="v-account-button" onClick={()=>open("nomi")}>{username?"@"+username:"Sign in with Nomi"}</button><button onClick={()=>{setCenter(c=>!c);setLauncher(false);}} aria-label="Notification center"><Bell size={14}/>{notifications.length?" · "+notifications.length:""} Notifications</button><span>{now.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'})}</span></div>
  <div className="v-workspace" ref={area}>
  <div className="v-desktop-icons">{catalog.filter(a=>data.installed.includes(a.id)).map(a=><button key={a.id} onClick={()=>open(a.id)} aria-label={'Open '+a.name}><span className="v-app-icon"><AppIcon id={a.id}/></span><span>{a.name}</span></button>)}</div>
