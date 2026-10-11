@@ -27,6 +27,7 @@ app.whenReady().then(() => {
  win.webContents.setWindowOpenHandler(()=>({action:'deny'}));
  require('./studio-api.cjs')(win,apiOrigin,apiSession);
  require('./solo-api.cjs')(win);
+ require('./freq-view.cjs')(win);
  win.webContents.on('will-navigate',event=>event.preventDefault());
  session.defaultSession.setPermissionRequestHandler((_wc,_permission,callback)=>callback(false));
  session.defaultSession.on('will-download',event=>event.preventDefault());
