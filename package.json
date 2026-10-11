@@ -12,15 +12,15 @@
     "dist": "npm run build && electron-builder --win nsis"
   },
   "dependencies": {
+    "lucide-react": "^1.31.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "lucide-react": "^1.31.0"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
-    "electron": "^35.0.0",
+    "electron": "^44.7.0",
     "electron-builder": "^26.0.0",
     "typescript": "^5.7.3",
     "vite": "^6.2.0"
@@ -41,11 +41,25 @@
       "artifactName": "Nexora-Setup.exe",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
-    }
+    },
+    "directories": {
+      "output": "release"
+    },
+    "protocols": [
+      {
+        "name": "Nexora address",
+        "schemes": [
+          "nexora"
+        ]
+      }
+    ]
   },
   "allowScripts": {
     "electron@35.7.5": true,
     "esbuild@0.25.12": true,
-    "electron-winstaller@5.4.0": true
-  }
+    "electron-winstaller@5.4.0": true,
+    "electron@44.7.0": true
+  },
+  "description": "A free minimalist browser for the Nexora community network",
+  "author": "Nexora contributors"
 }
