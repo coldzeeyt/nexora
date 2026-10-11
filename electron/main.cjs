@@ -24,6 +24,7 @@ app.whenReady().then(() => {
  require('./freq-view.cjs')(win);
  require('./preview.cjs')(win,protocol);
  require('./downloads.cjs')(win,apiOrigin,apiSession);
+ require('./shortcuts.cjs')(win.webContents,win);
  win.webContents.on('will-navigate',event=>event.preventDefault());
  win.webContents.on('will-frame-navigate',event=>{if(event.isMainFrame){event.preventDefault();return;}try{if(!event.url.startsWith('nexora-preview://'))parseAddress(event.url);}catch{event.preventDefault();}});
  const reportNavigation=(url)=>{try{win.webContents.send('nexora:navigate',parseAddress(url).address);}catch{}};
