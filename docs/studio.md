@@ -1,11 +1,9 @@
-# Studio: first HTML publishing release
+# Studio
 
-Open studio.nex in the desktop app, create a free account, choose an address, upload an HTML file, preview it and save a draft. Click Publish on the saved site. Another Nexora client connected to the same backend can then visit that address. Publishing is free for users. There is no payment or subscription system.
+Create a free account at studio.nex and save the private recovery code. Build visually, edit code or upload a ZIP with index.html at its root. Reserve a supported address when saving. Saving updates the private draft; publishing explicitly replaces the public snapshot.
 
-Current limits: 100 initial accounts, 5 sites per user, 512 KB per HTML file and 2 MB of HTML per account. Single HTML documents, inline CSS and text are supported. JavaScript, external images, embedded network content and downloads are blocked. ZIP uploads, uploaded asset folders, editing saved HTML, email verification, password reset and the visual builder remain later work. HTML is stored durably in PostgreSQL for this deliberately small first release; object storage is needed for future asset uploads.
+Accounts can own 5 websites with 8 MB of stored draft/publication content. Sites and extracted ZIPs are limited to 2 MB and 200 files. Individual assets are limited to 1 MB; HTML to 512 KB.
 
-Passwords use salted scrypt. Session tokens expire in seven days and only their hashes are stored in PostgreSQL. The desktop keeps its token in main-process memory: restarting the app signs you out, and community frames never receive it. Do not put passwords or tokens in source files. No cookie authentication is used, so cross-origin pages cannot act through a session cookie.
+Search and explore include published, unsuspended sites. Reports require an account. Administrators unlock admin.nex with the server token and can suspend, restore or remove sites.
 
-Registration requires both OPEN_REGISTRATION=true and a server-only NEXORA_ADMIN_TOKEN of at least 32 random characters. The administrator token is configured in Railway variables, not distributed to users. Signed-in users can report a site using the trusted toolbar. Operators can list GET /v1/admin/reports, suspend PATCH /v1/admin/sites/:domain with {"suspended":true}, unsuspend with false, or remove DELETE /v1/admin/sites/:domain, using Authorization: Bearer followed by that token. Suspended, unpublished and deleted sites are excluded from resolution and discovery. Never paste the operator token into community websites.
-
-Ownership is checked on publishing, unpublishing and deletion. Addresses are unique database keys, and official service names are reserved. Per-user quota checks and address creation run in a transaction under a user advisory lock. Public writes are rate limited. This remains an early release: verify the sandbox and moderation practices before increasing community size or enabling JavaScript.
+Profiles, sign-out, recovery-code rotation and password-confirmed account deletion are in account.nex. Account deletion releases addresses and removes stored assets.
