@@ -1,1 +1,50 @@
-{"name":"nexora","version":"0.1.0","private":true,"type":"module","main":"electron/main.cjs","scripts":{"dev":"vite --host 127.0.0.1","desktop":"electron .","build":"tsc --noEmit && vite build","test":"node --test tests/*.test.js","dist":"npm run build && electron-builder --win nsis"},"dependencies":{"react":"^19.0.0","react-dom":"^19.0.0"},"devDependencies":{"@types/react":"^19.0.0","@types/react-dom":"^19.0.0","@vitejs/plugin-react":"^4.3.4","electron":"^35.0.0","electron-builder":"^26.0.0","typescript":"^5.7.3","vite":"^6.2.0"},"build":{"appId":"network.nexora.browser","productName":"Nexora","files":["dist/**","electron/**","shared/**"],"win":{"target":"nsis"},"nsis":{"artifactName":"Nexora-Setup.exe","createDesktopShortcut":true,"createStartMenuShortcut":true}}}
+{
+  "name": "nexora",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "desktop": "electron .",
+    "build": "tsc --noEmit && vite build",
+    "test": "node --test tests/*.test.js",
+    "dist": "npm run build && electron-builder --win nsis"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "lucide-react": "^1.31.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^35.0.0",
+    "electron-builder": "^26.0.0",
+    "typescript": "^5.7.3",
+    "vite": "^6.2.0"
+  },
+  "build": {
+    "appId": "network.nexora.browser",
+    "productName": "Nexora",
+    "files": [
+      "dist/**",
+      "electron/**",
+      "shared/**"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "artifactName": "Nexora-Setup.exe",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "allowScripts": {
+    "electron@35.7.5": true,
+    "esbuild@0.25.12": true,
+    "electron-winstaller@5.4.0": true
+  }
+}
