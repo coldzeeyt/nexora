@@ -1,13 +1,13 @@
-# Nexora and Velora 0.3.0 — Windows preview
+# Velora and Nexora 0.4.0 — software preview
 
-Velora now includes Nomi, Kivo, Reson, Luma, Vexa, Nuvio, Plixo, Forma, Zento, Orbi, Mira and Fluxa. Forge replaces the desktop Studio name; Online keeps its name. Previous notes and files remain saved and accessible through Forma and Nuvio. Old utility launch icons have been removed; writing and time tools are available inside the new apps.
+Download the Velora Installer once, then choose Velora, Nexora or the individual apps you want. The installer fetches selected packages from this release, verifies their size and SHA-512 checksum, and installs them on Windows. Velora contains the built-in apps; standalone apps open independently and have their own update controls.
 
-The desktop uses spaced rows and columns. Local media import, playlists, photo editing, video playback, document editing and export, calendars, games, tile worlds and graphics work offline. A first-login guide can be skipped and replayed from Settings.
+Nomi, Kivo, Reson, Luma, Vexa, Nuvio, Plixo, Forma, Zento, Fluxa, Forge and Online are available as standalone apps. Orbi and Mira have been removed from the launcher. Existing saved data is preserved. Icons are generated from vectors at multiple sizes.
 
-Online mode starts off. Separate controls enable AI, publishing, messaging, community browsing, cloud storage, Nexora browsing, updates and the real-web Online browser. Nomi uses your existing Nexora account. Kivo supports friends, direct and group messages, invitation-only spaces, roles, blocking and reports. Shared libraries require explicit publication; cloud drafts remain private.
+Backup creates three rotating local snapshots. Optional private cloud snapshots save changed work every five minutes when Online mode, private cloud storage and automatic backup are enabled. Restore is explicit and turns Online mode off. Documents, virtual files, projects, graphics and app data are included; imported media originals require separate Nuvio uploads. Cloud snapshots have an 8 MB limit and share the existing account storage quota.
 
-Nexora keeps its existing standalone browser layout. This release fixes embedded browser sizing, address contrast, visible desktop scrollbars, calculator layout and stopwatch timing. Windows shortcuts contain multiple icon sizes.
+Online mode starts off. AI, publishing, messaging, community features, private cloud, updates and browsing have separate controls. Disabling updates cancels active downloads. Standalone apps and settings fit narrow screens without outer scrollbars.
 
-Both Windows applications include in-app update checks, download progress and verified update downloads. Nexora also bundles the Velora installer. Users are not charged; hosting uses the owner's Railway plan. This is an unsigned preview. Save your recovery code; email recovery is unavailable. Messages are not end-to-end encrypted. Cloud limits are 8 MB per file, 32 MB of files, and 100 records/2 MB of metadata per account. Larger local files remain offline. One window per app is supported.
+Mac disk images are unsigned previews for Intel and Apple Silicon. The app can download and verify its own update, then open the disk image; replace the app in Applications manually. Apple signing and notarization are not configured.
 
-APK, DMG and separate ecosystem-app installers are excluded from this release.
+Android test APKs are CI artifacts only. Production Android signing and reliable update continuity remain pending. No hardware firmware or terminal is included.
