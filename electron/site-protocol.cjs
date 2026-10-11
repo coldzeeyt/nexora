@@ -6,6 +6,7 @@ module.exports=function registerSiteProtocol(protocol,apiOrigin,apiSession){
  protocol.handle('nexora',async request=>{
   let parsed;try{parsed=parseAddress(request.url);}catch{return error('Use a registered Nexora address.',400);}
   if(!['GET','HEAD'].includes(request.method))return error('Website forms cannot submit to the registry.',405);
+  if(!require('./network-state.cjs').allowed('nexora'))return error('Turn on Online mode in Velora Settings to browse the Nexora network.',503);
   if(!apiOrigin)return error('The shared Nexora network is unavailable in offline mode.',503);
   let filePath;try{filePath=decodeURIComponent(new URL(parsed.url).pathname).slice(1);if(!filePath||filePath.endsWith('/'))filePath+='index.html';if(filePath.split('/').some(part=>part.startsWith('.')||!part)||filePath.includes('\\'))return error('Invalid website path.',400);}catch{return error('Invalid website path.',400);}
   try{
