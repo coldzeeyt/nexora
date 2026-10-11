@@ -1,0 +1,1 @@
+const {contextBridge,ipcRenderer}=require('electron');contextBridge.exposeInMainWorld('veloraInstaller',{run:(operation,payload)=>ipcRenderer.invoke('velora:installer',operation,payload),listen:callback=>{const listener=(_event,value)=>callback(value);ipcRenderer.on('velora:installer-state',listener);return()=>ipcRenderer.removeListener('velora:installer-state',listener);}});
