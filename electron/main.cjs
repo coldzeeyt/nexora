@@ -1,23 +1,16 @@
-const {app,BrowserWindow,protocol,session,ipcMain} = require('electron');
+const {app,BrowserWindow,protocol,session,ipcMain,nativeImage} = require('electron');
 const path = require('node:path');
 const {parseAddress} = require('../shared/address.cjs');
-protocol.registerSchemesAsPrivileged([{scheme:'nexora',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
-const sites = {};
+protocol.registerSchemesAsPrivileged([{scheme:'nexora',privileges:{standard:true,secure:true,supportFetchAPI:true,corsEnabled:true}},{scheme:'nexora-preview',privileges:{standard:true,secure:true,supportFetchAPI:true,corsEnabled:true}}]);
 app.whenReady().then(() => {
- session.defaultSession.webRequest.onBeforeRequest((details,done) => done({cancel:!details.url.startsWith('file://') && !details.url.startsWith('nexora://')}));
+ session.defaultSession.webRequest.onBeforeRequest((details,done) => done({cancel:!details.url.startsWith('file://') && !details.url.startsWith('nexora://') && !details.url.startsWith('nexora-preview://')}));
  const configuredOrigin=process.env.NEXORA_API_URL || (process.env.NEXORA_LOCAL==='1' ? undefined : require('./config.cjs').apiOrigin);
  let apiOrigin;
  if(configuredOrigin){const parsed=new URL(configuredOrigin);if(parsed.protocol!=='https:'||parsed.username||parsed.password||parsed.pathname!=='/')throw new Error('NEXORA_API_URL must be an HTTPS origin');apiOrigin=parsed.origin;}
  const apiSession=session.fromPartition('nexora-internal');
  apiSession.webRequest.onBeforeRequest((details,done)=>{let allowed=false;try{allowed=!!apiOrigin&&new URL(details.url).origin===apiOrigin;}catch{}done({cancel:!allowed});});
- protocol.handle('nexora', async request => {
-  let host;
-  try {host=parseAddress(request.url).host;} catch {return new Response('Unsupported address',{status:400});}
-  let content=sites[host];
-  if(apiOrigin){try{const response=await apiSession.fetch(`${apiOrigin}/v1/resolve/${encodeURIComponent(host)}`,{redirect:'error',signal:AbortSignal.timeout(10000)});if(response.ok){const data=await response.json();content=typeof data.html==='string'&&data.html.length<=1024*1024?data.html:undefined;}else if(response.status===404){content=undefined;}else{return new Response('Nexora backend unavailable',{status:503,headers:{'Content-Type':'text/plain'}});}}catch{return new Response('Could not connect to the Nexora backend',{status:503,headers:{'Content-Type':'text/plain'}});}}
-  return new Response(`<!doctype html><html lang="en"><meta charset="utf-8"><style>body{font:18px system-ui;max-width:720px;margin:100px auto;padding:32px;color:#222}h1{font-size:48px;font-weight:500;letter-spacing:-2px}p{line-height:1.8;color:#666}</style>${content||'<h1>Address not found</h1><p>This address is not registered in the local network.</p>'}</html>`,{status:content?200:404,headers:{'Content-Type':'text/html','Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; script-src 'none'; frame-ancestors 'self' file:"}});
- });
- const win=new BrowserWindow({show:process.env.NEXORA_TEST_HIDDEN!=='1',width:1280,height:850,minWidth:360,minHeight:560,title:'Nexora',backgroundColor:'#fafafa',autoHideMenuBar:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true}});
+ require('./site-protocol.cjs')(protocol,apiOrigin,apiSession);
+ const win=new BrowserWindow({show:process.env.NEXORA_TEST_HIDDEN!=='1',width:1280,height:850,minWidth:360,minHeight:560,title:'Nexora',icon:nativeImage.createFromDataURL(require('./branding.cjs').image),backgroundColor:'#fafafa',autoHideMenuBar:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true}});
  ipcMain.handle('nexora:ask',async(event,question)=>{
   if(event.sender!==win.webContents||event.senderFrame!==win.webContents.mainFrame||!event.senderFrame.url.startsWith('file://'))throw new Error('Access denied');
   if(typeof question!=='string'||!question.trim()||question.length>2000)return {error:'Enter up to 2,000 characters.'};
@@ -28,7 +21,12 @@ app.whenReady().then(() => {
  require('./studio-api.cjs')(win,apiOrigin,apiSession);
  require('./solo-api.cjs')(win);
  require('./freq-view.cjs')(win);
+ require('./preview.cjs')(win,protocol);
  win.webContents.on('will-navigate',event=>event.preventDefault());
+ win.webContents.on('will-frame-navigate',event=>{if(event.isMainFrame){event.preventDefault();return;}try{if(!event.url.startsWith('nexora-preview://'))parseAddress(event.url);}catch{event.preventDefault();}});
+ const reportNavigation=(url)=>{try{win.webContents.send('nexora:navigate',parseAddress(url).address);}catch{}};
+ win.webContents.on('did-frame-navigate',(_event,url,_code,_status,isMainFrame)=>{if(!isMainFrame)reportNavigation(url);});
+ win.webContents.on('did-navigate-in-page',(_event,url,isMainFrame)=>{if(!isMainFrame)reportNavigation(url);});
  session.defaultSession.setPermissionRequestHandler((_wc,_permission,callback)=>callback(false));
  session.defaultSession.on('will-download',event=>event.preventDefault());
  win.loadFile(path.join(__dirname,'../dist/index.html'));
