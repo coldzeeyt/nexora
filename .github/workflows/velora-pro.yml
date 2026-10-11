@@ -78,3 +78,5 @@ jobs:
 # Pro 0.4.3 protects each native workspace with its own process lock.
 
 # Pro 0.4.4 fixes widget close controls and picker overlap.
+
+# Pro 0.4.5 explicitly shows new native windows on Windows.
