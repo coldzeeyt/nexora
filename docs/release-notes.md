@@ -11,3 +11,5 @@ Online mode starts off. AI, publishing, messaging, community features, private c
 Mac disk images are unsigned previews for Intel and Apple Silicon. The app can download and verify its own update, then open the disk image; replace the app in Applications manually. Apple signing and notarization are not configured.
 
 Android test APKs are CI artifacts only. Production Android signing and reliable update continuity remain pending. No hardware firmware or terminal is included.
+
+Glass is an optional theme with a glassy background, translucent windows, soft reflections and reduced-motion support. Settings includes Glass arrow, Halo ring, Precision dot and Crosshair cursors; Classic and the system cursor remain available.
