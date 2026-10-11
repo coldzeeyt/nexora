@@ -1,32 +1,43 @@
 {
   "name": "nexora",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "desktop": "electron .",
-    "build": "node scripts/branding.cjs && node scripts/velora-branding.cjs && tsc --noEmit && vite build",
+    "build": "node scripts/branding.cjs && node scripts/velora-branding.cjs && node scripts/standalone-branding.cjs && tsc --noEmit && vite build",
     "test": "node --test tests/*.test.js",
     "dist": "npm run dist:velora && npm run build && electron-builder --win nsis --publish never",
     "velora": "electron electron/velora-main.cjs",
-    "dist:velora": "npm run build && electron-builder --config velora-builder.cjs --win nsis --publish never"
+    "dist:velora": "npm run build && electron-builder --config velora-builder.cjs --win nsis --publish never",
+    "dist:platform": "npm run build && node scripts/build-platform.cjs",
+    "android:prepare": "npm run build && node scripts/prepare-android.cjs",
+    "dist:installer": "npm run build && node scripts/build-installer.cjs"
   },
   "dependencies": {
-    "electron-updater": "^6.8.9",
-    "lucide-react": "^1.31.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "electron-updater": "^6.8.9"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/browser": "^8.0.5",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/filesystem": "^8.1.4",
+    "@capacitor/share": "^8.0.3",
+    "@capawesome/capacitor-file-picker": "^8.1.0",
+    "@resvg/resvg-js": "^2.6.2",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "electron": "^44.7.0",
     "electron-builder": "^26.0.0",
     "typescript": "^5.7.3",
-    "vite": "^6.2.0"
+    "vite": "^6.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "lucide-react": "^1.31.0"
   },
   "build": {
     "appId": "network.nexora.browser",
@@ -56,12 +67,7 @@
         ]
       }
     ],
-    "extraResources": [
-      {
-        "from": "release-velora/Velora-Setup.exe",
-        "to": "Velora-Setup.exe"
-      }
-    ],
+    "extraResources": [],
     "publish": {
       "owner": "coldzeeyt",
       "repo": "nexora",
