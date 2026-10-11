@@ -71,3 +71,5 @@ jobs:
           fi
 
 # Flatten combined Pro and Installer artifacts before catalog verification.
+
+# Pro 0.4.2 adds separate native workspace windows.
