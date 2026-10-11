@@ -1,0 +1,27 @@
+name: Publish built Pro and Installer
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish-pro-recovery.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: pro-*
+          path: pro-assets
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          run-id: 38169710160
+      - run: node scripts/build-pro-catalog.cjs pro-assets
+      - name: Publish verified packages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload velora-pro-latest pro-assets/*.exe pro-assets/*.dmg pro-assets/*.yml pro-assets/*.json pro-assets/*.blockmap --clobber
+          gh release edit velora-pro-latest --notes-file docs/velora-pro.md --prerelease --latest=false
