@@ -5,5 +5,6 @@ export type StoreApp={id:string;title:string;description:string;version:string;r
 export type StudioResult={error?:string;ready?:boolean;apps?:StoreApp[];id?:string;title?:string;description?:string;version?:string;revision?:number;user?:User;sites?:Site[];available?:boolean;domain?:string;ok?:boolean;files?:WebsiteFile[];quotaBytes?:number;status?:string;recoveryCode?:string;reports?:{id:string;domain:string;reason:string;created_at:string}[];users?:number};
 export async function studioApi(operation:string,payload:Record<string,unknown>={}):Promise<StudioResult>{
  if(!window.nexora?.studio)return {error:'Open studio.nex in the Nexora desktop app to sign in and publish. This browser preview shows the interface.'};
- try{return await window.nexora.studio(operation,payload);}catch{return {error:'Studio could not complete this request.'};}
+ try{const result=await window.nexora.studio(operation,payload);if(!result.error&&["login","register","recover","logout","deleteAccount","profile"].includes(operation))window.dispatchEvent(new Event("velora:account-changed"));return result;}catch{return {error:'Studio could not complete this request.'};}
 }
+
