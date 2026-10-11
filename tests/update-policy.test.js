@@ -1,0 +1,5 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import policy from '../shared/update-policy.cjs';
+test('update traffic is restricted to the official repository and GitHub asset hosts',()=>{
+ for(const url of ['https://github.com/coldzeeyt/nexora/releases.atom','https://github.com/coldzeeyt/nexora/releases/latest','https://github.com/coldzeeyt/nexora/releases/download/v0.2.0/Nexora-Setup.exe','https://release-assets.githubusercontent.com/github-production-release-asset/1/asset?token=temporary'])assert.equal(policy.allowedUpdateUrl(url),true,url);
+ for(const url of ['http://github.com/coldzeeyt/nexora/releases/latest','https://github.com/other/repo/releases/latest','https://github.com.evil.test/coldzeeyt/nexora/releases/latest','https://user:password@github.com/coldzeeyt/nexora/releases/latest','file:///C:/payload.exe','https://example.com/Nexora-Setup.exe','https://github.com/coldzeeyt/nexora/releases-evil'])assert.equal(policy.allowedUpdateUrl(url),false,url);
+});
