@@ -1,0 +1,2 @@
+module.exports={extraResources:[],protocols:[],appId:'network.velora.desktop',productName:'Velora',extraMetadata:{main:'electron/velora-main.cjs',name:'velora',description:'Velora virtual desktop with the Nexora browser'},directories:{output:'release-velora'},files:['dist/**','electron/**','shared/**'],win:{target:'nsis',icon:'build/velora.ico'},nsis:{artifactName:'Velora-Setup.exe',createDesktopShortcut:true,createStartMenuShortcut:true},publish:{provider:'github',owner:'coldzeeyt',repo:'nexora',channel:'velora'}};
+
