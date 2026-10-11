@@ -1,7 +1,8 @@
-const {ipcMain,app,dialog}=require('electron');
+const {ipcMain,app,dialog,screen}=require('electron');
 const fs=require('node:fs/promises');const path=require('node:path');const {randomUUID}=require('node:crypto');
 module.exports=win=>{
- const root=path.join(app.getPath('userData'),'velora');const target=path.join(root,'desktop.json');let pending=Promise.resolve();let canClose=false;let closeTimer;
+ const root=path.join(app.getPath('userData'),'velora');const target=path.join(root,'desktop.json');let desktopBounds;let extended=false;let pending=Promise.resolve();let canClose=false;let closeTimer;
+ const recover=()=>{if(extended){extended=false;if(desktopBounds&&!win.isDestroyed()){const display=screen.getDisplayMatching(desktopBounds).workArea;win.setBounds({x:display.x,y:display.y,width:Math.min(desktopBounds.width,display.width),height:Math.min(desktopBounds.height,display.height)});}}};screen.on('display-removed',recover);win.once('closed',()=>screen.removeListener('display-removed',recover));
  win.on('close',event=>{if(canClose)return;event.preventDefault();if(closeTimer)return;win.webContents.send('velora:flush');closeTimer=setTimeout(()=>{canClose=true;win.close();},3000);});
  ipcMain.handle('velora:store',async(event,operation,payload)=>{
   if(event.sender!==win.webContents||event.senderFrame!==win.webContents.mainFrame||!event.senderFrame.url.startsWith('file://'))throw new Error('Access denied');
@@ -21,6 +22,8 @@ module.exports=win=>{
    if(operation==='export'){
     if(!payload||typeof payload.name!=='string'||typeof payload.data!=='string'||payload.data.length>11184812)return {error:'Invalid export.'};const name=path.basename(payload.name).replace(/[<>:"/\\|?*\x00-\x1f]/g,'_').slice(0,120)||'Velora-file';const selected=await dialog.showSaveDialog(win,{title:'Export Velora file',defaultPath:name});if(selected.canceled||!selected.filePath)return {canceled:true};await fs.writeFile(selected.filePath,Buffer.from(payload.data,'base64'));return {ok:true};
    }
+   if(operation==='extend-desktop'){if(process.env.VELORA_PRO!=='1')return {error:'This control belongs to Velora Pro.'};if(payload===false){if(desktopBounds)win.setBounds(desktopBounds);extended=false;return {ok:true};}if(payload!==true)return {error:'Invalid display operation.'};const displays=screen.getAllDisplays();if(displays.length<2)return {error:'Connect two monitors to extend this workspace.'};const areas=displays.map(d=>d.workArea);const x=Math.min(...areas.map(a=>a.x)),y=Math.min(...areas.map(a=>a.y));const width=Math.max(...areas.map(a=>a.x+a.width))-x,height=Math.max(...areas.map(a=>a.y+a.height))-y;if(width>16000||height>16000)return {error:'This monitor arrangement is too large.'};if(!extended)desktopBounds=win.getBounds();win.setFullScreen(false);win.unmaximize();win.setBounds({x,y,width,height});extended=true;return {ok:true};}
+   if(operation==='performance'){const metrics=app.getAppMetrics();return {performance:{processes:metrics.length,memoryKB:metrics.reduce((sum,p)=>sum+(p.memory?.workingSetSize||0),0),cpuPercent:metrics.reduce((sum,p)=>sum+(p.cpu?.percentCPUUsage||0),0),measuredAt:new Date().toISOString()}};}
    if(operation==='fullscreen'){win.setFullScreen(Boolean(payload));return {ok:true};}
    return {error:'Unknown desktop operation.'};
   }catch{return {error:'Velora could not access its local storage. Please try again.'};}
