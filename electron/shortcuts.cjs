@@ -1,0 +1,1 @@
+module.exports=function shortcuts(contents,win){contents.on('before-input-event',(event,input)=>{if(input.type!=='keyDown')return;const key=input.key.toLowerCase();const action=input.control||input.meta?({l:'address',t:'new-tab',w:'close-tab',r:'refresh'}[key]):key==='f5'?'refresh':undefined;if(action){event.preventDefault();win.webContents.send('nexora:shortcut',action);}});};
