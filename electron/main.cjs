@@ -10,6 +10,7 @@ app.whenReady().then(() => {
  const apiSession=session.fromPartition('nexora-internal');
  apiSession.webRequest.onBeforeRequest((details,done)=>{let allowed=false;try{allowed=!!apiOrigin&&new URL(details.url).origin===apiOrigin;}catch{}done({cancel:!allowed});});
  require('./site-protocol.cjs')(protocol,apiOrigin,apiSession);
+ if(app.isPackaged&&process.env.NEXORA_TEST_HIDDEN!=='1')app.setAsDefaultProtocolClient('nexora');
  const win=new BrowserWindow({show:process.env.NEXORA_TEST_HIDDEN!=='1',width:1280,height:850,minWidth:360,minHeight:560,title:'Nexora',icon:nativeImage.createFromDataURL(require('./branding.cjs').image),backgroundColor:'#fafafa',autoHideMenuBar:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true}});
  ipcMain.handle('nexora:ask',async(event,question)=>{
   if(event.sender!==win.webContents||event.senderFrame!==win.webContents.mainFrame||!event.senderFrame.url.startsWith('file://'))throw new Error('Access denied');
@@ -22,6 +23,7 @@ app.whenReady().then(() => {
  require('./solo-api.cjs')(win);
  require('./freq-view.cjs')(win);
  require('./preview.cjs')(win,protocol);
+ require('./downloads.cjs')(win,apiOrigin,apiSession);
  win.webContents.on('will-navigate',event=>event.preventDefault());
  win.webContents.on('will-frame-navigate',event=>{if(event.isMainFrame){event.preventDefault();return;}try{if(!event.url.startsWith('nexora-preview://'))parseAddress(event.url);}catch{event.preventDefault();}});
  const reportNavigation=(url)=>{try{win.webContents.send('nexora:navigate',parseAddress(url).address);}catch{}};
@@ -29,7 +31,10 @@ app.whenReady().then(() => {
  win.webContents.on('did-navigate-in-page',(_event,url,isMainFrame)=>{if(!isMainFrame)reportNavigation(url);});
  session.defaultSession.setPermissionRequestHandler((_wc,_permission,callback)=>callback(false));
  session.defaultSession.on('will-download',event=>event.preventDefault());
+ const initialAddress=process.argv.find(arg=>arg.startsWith('nexora://'));
+ if(initialAddress)win.webContents.once('did-finish-load',()=>setTimeout(()=>{try{win.webContents.send('nexora:navigate',parseAddress(initialAddress).address);}catch{}},200));
  win.loadFile(path.join(__dirname,'../dist/index.html'));
+
 });
 app.on('window-all-closed',()=>app.quit());
 
