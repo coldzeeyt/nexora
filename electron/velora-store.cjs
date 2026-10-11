@@ -9,11 +9,13 @@ module.exports=win=>{
    if(operation==='close-ready'){clearTimeout(closeTimer);closeTimer=undefined;await pending;canClose=true;win.close();return {ok:true};}
    if(operation==='close-cancel'){clearTimeout(closeTimer);closeTimer=undefined;const result=await dialog.showMessageBox(win,{type:'warning',message:'Velora could not save your changes.',detail:'Keep the app open to try again, or close without saving the latest changes.',buttons:['Keep open','Close without saving'],defaultId:0,cancelId:0});if(result.response===1){canClose=true;win.close();}return {ok:true};}
    if(operation==='load'){await pending;try{return {data:JSON.parse(await fs.readFile(target,'utf8'))};}catch(e){if(e.code==='ENOENT')return {};throw e;}}
+   if(operation==='backup-list'){await pending;try{return {backups:JSON.parse(await fs.readFile(path.join(root,'backups.json'),'utf8'))};}catch(e){if(e.code==='ENOENT')return {backups:[]};throw e;}}
+   if(operation==='backup-save'){if(!payload||payload.version!==1||JSON.stringify(payload).length>38*1024*1024)return {error:'Invalid workspace snapshot.'};const json=JSON.stringify(payload);pending=pending.catch(()=>{}).then(async()=>{await fs.mkdir(root,{recursive:true});let saved=[];try{saved=JSON.parse(await fs.readFile(path.join(root,'backups.json'),'utf8'));}catch(e){if(e.code!=='ENOENT')throw e;}if(saved[0]&&JSON.stringify(saved[0].data)===json)return;const snapshots=[{createdAt:new Date().toISOString(),data:payload},...saved].slice(0,3);const temp=path.join(root,randomUUID()+'.tmp');await fs.writeFile(temp,JSON.stringify(snapshots));await fs.rename(temp,path.join(root,'backups.json'));});await pending;return {ok:true};}
    if(operation==='save'){
     if(!payload||typeof payload!=='object'||JSON.stringify(payload).length>38*1024*1024)return {error:'Desktop storage is limited to 32 MB.'};
     const json=JSON.stringify(payload);pending=pending.catch(()=>{}).then(async()=>{await fs.mkdir(root,{recursive:true});const temp=path.join(root,randomUUID()+'.tmp');await fs.writeFile(temp,json);await fs.rename(temp,target);});await pending;return {ok:true};
    }
-   if(operation==='import'){
+   if(operation==='import'||operation==='import-backup'){
     const selected=await dialog.showOpenDialog(win,{title:'Import into Velora Files',properties:['openFile']});if(selected.canceled)return {canceled:true};const source=selected.filePaths[0];const stat=await fs.stat(source);if(!stat.isFile()||stat.size>8*1024*1024)return {error:'Import files up to 2 MB.'};return {file:{id:randomUUID(),name:path.basename(source),data:(await fs.readFile(source)).toString('base64'),bytes:stat.size,modified:new Date().toISOString()}};
    }
    if(operation==='export'){
@@ -24,3 +26,4 @@ module.exports=win=>{
   }catch{return {error:'Velora could not access its local storage. Please try again.'};}
  });
 };
+
